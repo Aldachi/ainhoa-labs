@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin — Ch'utillos 2026</title>
+
+  <link rel="icon" type="image/svg+xml" href="../../images/logo-negro.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/main.css">
+  <link rel="stylesheet" href="../styles/chutillos.css">
+</head>
+<body class="chx">
+
+  <header class="chx-header">
+    <div class="chx-header-inner">
+      <a href="../index.html" class="chx-header-logo" aria-label="Volver al tracker">
+        <img src="../../images/logo-negro.svg" alt="Ainhoa Labs">
+      </a>
+      <div class="chx-titulo">
+        <strong>Panel de administración</strong>
+        Ch'utillos 2026
+      </div>
+      <div class="chx-header-fin">
+        <span class="chx-estado" id="estado" data-estado="cargando" role="status">
+          <span class="chx-punto"></span>
+          <span id="estado-texto">Sin sesión</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Ingreso -->
+  <main class="chx-op" id="panel-login">
+    <section class="chx-panel">
+      <h1>Ingresar</h1>
+      <p>Panel restringido. Las modificaciones quedan registradas.</p>
+
+      <form id="form-login" style="margin-top:1.5rem">
+        <div class="chx-campo">
+          <label for="pin">PIN de acceso</label>
+          <input type="password" id="pin" inputmode="numeric" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-accent chx-btn-grande" id="btn-login">
+          Entrar
+        </button>
+      </form>
+
+      <p id="login-error" style="color:#d9a441; margin-top:1rem; font-size:0.8125rem" hidden></p>
+    </section>
+  </main>
+
+  <!-- Panel -->
+  <div class="chx-admin" id="panel-admin" hidden>
+
+    <div id="aviso-mock" class="chx-aviso" hidden>
+      <strong>Modo de datos de ejemplo.</strong>
+      Estás viendo las 115 fraternidades de relleno. Los cambios que hagas
+      acá no se guardan en ninguna base de datos y se pierden al recargar.
+      Para operar sobre datos reales hay que configurar Supabase y el Worker
+      (ver <code>supabase/README.md</code>).
+    </div>
+
+    <div class="chx-tabs">
+      <button class="chx-dia" data-tab="fraternidades" aria-pressed="true">Fraternidades</button>
+      <button class="chx-dia" data-tab="checkpoints" aria-pressed="false">Checkpoints</button>
+      <button class="chx-dia" data-tab="enlaces" aria-pressed="false">Enlaces</button>
+      <button class="chx-dia" data-tab="estado" aria-pressed="false">Estado</button>
+    </div>
+
+    <!-- Fraternidades -->
+    <section id="tab-fraternidades">
+      <div class="chx-tabla-scroll">
+        <table class="chx-tabla">
+          <thead>
+            <tr>
+              <th>Día</th><th>Orden</th><th>Nombre</th><th>Tipo</th>
+              <th>Tracking</th><th>Hora</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-frats"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Checkpoints -->
+    <section id="tab-checkpoints" hidden>
+      <div class="chx-tabla-scroll">
+        <table class="chx-tabla">
+          <thead>
+            <tr><th>Orden</th><th>Nombre</th><th>Lat</th><th>Lng</th></tr>
+          </thead>
+          <tbody id="tbody-chks"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Enlaces -->
+    <section id="tab-enlaces" hidden>
+      <p class="chx-aviso">
+        <strong>Repartí cada enlace solo a quien corresponde.</strong>
+        Quien tenga el enlace puede reportar en nombre de esa fraternidad o
+        de ese punto de control. No los publiques en grupos abiertos.
+      </p>
+
+      <h2 class="chx-titulo" style="border:0; padding:0; margin:1.5rem 0 0.75rem">Portadores GPS</h2>
+      <div class="chx-tabla-scroll">
+        <table class="chx-tabla">
+          <thead><tr><th>Fraternidad</th><th>Día</th><th>Enlace</th><th></th></tr></thead>
+          <tbody id="tbody-portadores"></tbody>
+        </table>
+      </div>
+
+      <h2 class="chx-titulo" style="border:0; padding:0; margin:2rem 0 0.75rem">Puntos de control</h2>
+      <div class="chx-tabla-scroll">
+        <table class="chx-tabla">
+          <thead><tr><th>Punto</th><th>Orden</th><th>Enlace</th><th></th></tr></thead>
+          <tbody id="tbody-voluntarios"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Estado -->
+    <section id="tab-estado" hidden>
+      <div class="chx-tabla-scroll">
+        <table class="chx-tabla">
+          <thead>
+            <tr><th>Fraternidad</th><th>Día</th><th>Origen</th><th>Último reporte</th></tr>
+          </thead>
+          <tbody id="tbody-estado"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="chx-pie">
+    <div class="chx-pie-inner">
+      <p class="chx-pie-texto">Ainhoa Labs · Potosí, Bolivia</p>
+    </div>
+  </footer>
+
+  <script src="../scripts/config.js"></script>
+  <script src="../scripts/mock-data.js"></script>
+  <script src="../scripts/data.js"></script>
+  <script src="../scripts/util.js"></script>
+  <script src="../scripts/admin.js"></script>
+</body>
+</html>

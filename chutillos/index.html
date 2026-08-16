@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <title>Ch'utillos 2026 en vivo — ¿Dónde va tu fraternidad? | Ainhoa Labs</title>
+  <meta name="description" content="Seguí en vivo el recorrido de las fraternidades en la Festividad de Ch'utillos 2026 en Potosí. Buscá tu fraternidad y mirá su última posición conocida en el mapa.">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Ch'utillos 2026 en vivo — Tracker del recorrido">
+  <meta property="og:description" content="Buscá tu fraternidad y mirá dónde va durante las entradas del 28, 29 y 30 de agosto.">
+  <meta property="og:locale" content="es_BO">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/svg+xml" href="../images/logo-negro.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="styles/chutillos.css">
+</head>
+<body class="chx">
+
+  <header class="chx-header">
+    <div class="chx-header-inner">
+      <a href="../index.html" class="chx-header-logo" aria-label="Ainhoa Labs — Inicio">
+        <img src="../images/logo-negro.svg" alt="Ainhoa Labs">
+      </a>
+      <div class="chx-titulo">
+        <strong>Ch'utillos 2026</strong>
+        Tracker del recorrido
+      </div>
+      <div class="chx-header-fin">
+        <span class="chx-estado" id="estado" data-estado="cargando" role="status">
+          <span class="chx-punto"></span>
+          <span id="estado-texto">Conectando</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <div class="chx-filtros">
+    <div class="chx-dias" id="dias" role="group" aria-label="Filtrar por día"></div>
+
+    <div class="chx-buscar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/>
+      </svg>
+      <label for="buscar" class="chx-sr">Buscar fraternidad</label>
+      <input type="search" id="buscar" placeholder="Buscar fraternidad..."
+             autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="chx-limpiar" id="limpiar" hidden aria-label="Limpiar búsqueda">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <p class="chx-resumen" id="resumen" aria-live="polite">Cargando fraternidades...</p>
+  </div>
+
+  <main class="chx-cuerpo">
+    <div class="chx-mapa-caja">
+      <div id="mapa" role="application" aria-label="Mapa del recorrido"></div>
+      <p class="chx-mapa-nota" id="mapa-nota">Trazado referencial · pendiente de datos oficiales</p>
+    </div>
+
+    <div>
+      <ul class="chx-lista" id="lista" aria-label="Fraternidades"></ul>
+      <div class="chx-vacio" id="vacio" hidden>
+        No se encontraron fraternidades con ese nombre.
+      </div>
+    </div>
+  </main>
+
+  <footer class="chx-pie">
+    <div class="chx-pie-inner">
+      <p class="chx-pie-texto">
+        <strong>Hecho en Potosí por Ainhoa Labs.</strong>
+        Construimos software, inteligencia artificial y automatizaciones
+        para empresas que quieren crecer.
+      </p>
+      <a href="../index.html#services" class="btn btn-outline-light">
+        Ver qué hacemos
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </a>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/mock-data.js"></script>
+  <script src="scripts/data.js"></script>
+  <script src="scripts/util.js"></script>
+  <script src="scripts/publico.js"></script>
+</body>
+</html>

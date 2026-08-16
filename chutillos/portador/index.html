@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Portador GPS — Ch'utillos 2026</title>
+
+  <link rel="icon" type="image/svg+xml" href="../../images/logo-negro.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/main.css">
+  <link rel="stylesheet" href="../styles/chutillos.css">
+</head>
+<body class="chx">
+
+  <header class="chx-header">
+    <div class="chx-header-inner">
+      <span class="chx-header-logo">
+        <img src="../../images/logo-negro.svg" alt="Ainhoa Labs">
+      </span>
+      <div class="chx-titulo">
+        <strong>Portador GPS</strong>
+        Ch'utillos 2026
+      </div>
+      <div class="chx-header-fin">
+        <span class="chx-estado" id="estado" data-estado="cargando" role="status">
+          <span class="chx-punto"></span>
+          <span id="estado-texto">Verificando</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="chx-op">
+
+    <!-- Token inválido -->
+    <section class="chx-panel" id="panel-error" hidden>
+      <h1>Enlace no válido</h1>
+      <p>
+        Este enlace no corresponde a ninguna fraternidad registrada.
+        Pedí a Ainhoa Labs que te reenvíe tu enlace personal.
+      </p>
+    </section>
+
+    <!-- Antes de arrancar -->
+    <section class="chx-panel" id="panel-inicio" hidden>
+      <h1 id="nombre-frat">—</h1>
+      <p id="detalle-frat"></p>
+
+      <div class="chx-aviso" style="margin-top:1.25rem">
+        <strong>Antes de empezar:</strong><br>
+        1. Dejá esta página abierta durante todo el recorrido.<br>
+        2. Conectá el celular a una batería portátil si podés.<br>
+        3. Bajá el brillo de la pantalla al mínimo.<br>
+        4. No cierres la pestaña ni bloquees la pantalla.
+      </div>
+
+      <button class="btn btn-accent chx-btn-grande" id="btn-iniciar" style="margin-top:0.5rem">
+        Activar mi ubicación
+      </button>
+    </section>
+
+    <!-- Transmitiendo -->
+    <section class="chx-panel" id="panel-activo" hidden>
+      <h1 id="nombre-frat-2">—</h1>
+
+      <dl style="margin-top:1.25rem">
+        <div class="chx-dato">
+          <dt>Estado</dt>
+          <dd id="d-estado">Transmitiendo</dd>
+        </div>
+        <div class="chx-dato">
+          <dt>Último envío</dt>
+          <dd id="d-ultimo">—</dd>
+        </div>
+        <div class="chx-dato">
+          <dt>Enviados</dt>
+          <dd id="d-enviados">0</dd>
+        </div>
+        <div class="chx-dato">
+          <dt>Pendientes</dt>
+          <dd id="d-pendientes">0</dd>
+        </div>
+        <div class="chx-dato">
+          <dt>Precisión</dt>
+          <dd id="d-precision">—</dd>
+        </div>
+        <div class="chx-dato">
+          <dt>Pantalla activa</dt>
+          <dd id="d-wakelock">—</dd>
+        </div>
+      </dl>
+
+      <button class="btn btn-outline-light chx-btn-grande" id="btn-detener" style="margin-top:1.25rem">
+        Detener transmisión
+      </button>
+    </section>
+
+    <section class="chx-panel" id="panel-ayuda" hidden>
+      <p id="texto-ayuda"></p>
+    </section>
+
+  </main>
+
+  <footer class="chx-pie">
+    <div class="chx-pie-inner">
+      <p class="chx-pie-texto">
+        Sistema de seguimiento desarrollado por <strong>Ainhoa Labs</strong>, Potosí.
+      </p>
+    </div>
+  </footer>
+
+  <script src="../scripts/config.js"></script>
+  <script src="../scripts/mock-data.js"></script>
+  <script src="../scripts/data.js"></script>
+  <script src="../scripts/util.js"></script>
+  <script src="../scripts/queue.js"></script>
+  <script src="../scripts/portador.js"></script>
+</body>
+</html>

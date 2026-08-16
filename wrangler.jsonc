@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ainhoa-labs",
+  "compatibility_date": "2026-06-05",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // El Worker atiende /api/admin/* y delega todo lo demás a los archivos
+  // estáticos mediante el binding ASSETS.
+  "main": "worker/index.js",
+
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  },
+
+  // Los secretos NO van acá. Se cargan con:
+  //   npx wrangler secret put ADMIN_PIN
+  //   npx wrangler secret put SESSION_SECRET
+  //   npx wrangler secret put SUPABASE_SERVICE_KEY
+  "vars": {
+    "SUPABASE_URL": ""
+  }
+}

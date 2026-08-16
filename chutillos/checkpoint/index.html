@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Punto de control — Ch'utillos 2026</title>
+
+  <link rel="icon" type="image/svg+xml" href="../../images/logo-negro.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../styles/main.css">
+  <link rel="stylesheet" href="../styles/chutillos.css">
+</head>
+<body class="chx">
+
+  <header class="chx-header">
+    <div class="chx-header-inner">
+      <span class="chx-header-logo">
+        <img src="../../images/logo-negro.svg" alt="Ainhoa Labs">
+      </span>
+      <div class="chx-titulo">
+        <strong id="nombre-chk">Punto de control</strong>
+        Ch'utillos 2026
+      </div>
+      <div class="chx-header-fin">
+        <span class="chx-estado" id="estado" data-estado="cargando" role="status">
+          <span class="chx-punto"></span>
+          <span id="estado-texto">Verificando</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Token inválido -->
+  <main class="chx-op" id="panel-error" hidden>
+    <section class="chx-panel">
+      <h1>Enlace no válido</h1>
+      <p>
+        Este enlace no corresponde a ningún punto de control.
+        Pedí a Ainhoa Labs que te reenvíe tu enlace.
+      </p>
+    </section>
+  </main>
+
+  <!-- Operación -->
+  <div id="panel-op" hidden>
+    <div class="chx-filtros">
+      <div class="chx-dias" id="dias" role="group" aria-label="Filtrar por día"></div>
+
+      <div class="chx-buscar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/>
+        </svg>
+        <label for="buscar" class="chx-sr">Buscar fraternidad</label>
+        <input type="search" id="buscar" placeholder="Buscar fraternidad..."
+               autocomplete="off" autocorrect="off" spellcheck="false">
+        <button class="chx-limpiar" id="limpiar" hidden aria-label="Limpiar búsqueda">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="chx-resumen" id="resumen" aria-live="polite"></p>
+    </div>
+
+    <main class="chx-op" style="max-width:640px">
+      <p class="chx-aviso">
+        Tocá el botón de una fraternidad <strong>en el momento en que pasa
+        por tu punto</strong>. Si no hay señal, el reporte queda guardado y
+        se envía solo cuando vuelva la conexión.
+      </p>
+
+      <div id="lista-frats" style="display:flex; flex-direction:column; gap:0.5rem"></div>
+
+      <div class="chx-vacio" id="vacio" hidden>
+        No se encontraron fraternidades con ese nombre.
+      </div>
+    </main>
+  </div>
+
+  <!-- Confirmación con deshacer -->
+  <div class="chx-toast" id="toast" role="status" aria-live="polite">
+    <span id="toast-texto"></span>
+    <button id="toast-deshacer" type="button">Deshacer</button>
+  </div>
+
+  <footer class="chx-pie">
+    <div class="chx-pie-inner">
+      <p class="chx-pie-texto">
+        Sistema de seguimiento desarrollado por <strong>Ainhoa Labs</strong>, Potosí.
+      </p>
+    </div>
+  </footer>
+
+  <script src="../scripts/config.js"></script>
+  <script src="../scripts/mock-data.js"></script>
+  <script src="../scripts/data.js"></script>
+  <script src="../scripts/util.js"></script>
+  <script src="../scripts/queue.js"></script>
+  <script src="../scripts/checkpoint.js"></script>
+</body>
+</html>
