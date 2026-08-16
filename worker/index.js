@@ -41,6 +41,26 @@ const TABLAS_PERMITIDAS = new Set([
   'recorrido'
 ]);
 
+/* El binding de assets apunta a la raíz del repositorio, así que sin este
+   filtro el sitio serviría también la documentación interna, el esquema de
+   la base y el código del propio Worker. Nada de eso tiene secretos —
+   viven como variables de entorno de Cloudflare — pero publicar el esquema
+   le regala a cualquiera el mapa exacto de funciones y políticas contra el
+   que probar. */
+const RUTAS_PRIVADAS = [
+  /^\/worker\//i,
+  /^\/supabase\//i,
+  /^\/\.claude\//i,
+  /^\/design-system\//i,
+  /^\/wrangler\.jsonc$/i,
+  /^\/[^/]*\.md$/i,        // KNOWLEDGE-BASE.md y demás en la raíz
+  /^\/\.git/i
+];
+
+function esRutaPrivada(pathname) {
+  return RUTAS_PRIVADAS.some(re => re.test(pathname));
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -51,6 +71,13 @@ export default {
       } catch (err) {
         return json({ error: 'Error interno', detalle: String(err && err.message) }, 500);
       }
+    }
+
+    if (esRutaPrivada(url.pathname)) {
+      return new Response('No encontrado', {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
     }
 
     /* Cualquier otra ruta la resuelven los archivos estáticos */
