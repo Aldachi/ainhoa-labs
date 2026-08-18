@@ -69,11 +69,13 @@
     MAPA_CENTRO: [-19.5892, -65.7580],
     MAPA_ZOOM: 14,
 
-    /* Mientras esté en false, el mapa público muestra el aviso de que el
-       trazado es referencial. Poner en true recién cuando el recorrido
-       cargado sea el verdadero: es lo que evita que el aviso quede puesto
-       por olvido, o que se saque antes de tiempo. */
-    RECORRIDO_OFICIAL: false
+    /* El trazado cargado en mock-data.js es el real, levantado sobre el
+       mapa por el cliente, así que el aviso de "trazado referencial" ya no
+       corresponde.
+
+       Ojo: esto habla solo del recorrido. Los checkpoints y los nombres de
+       las fraternidades siguen siendo de relleno. */
+    RECORRIDO_OFICIAL: true
   };
 
   /* Override por querystring, solo para pruebas */

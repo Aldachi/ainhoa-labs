@@ -18,38 +18,58 @@
   'use strict';
 
   /* ============================================================
-     1. Recorrido — PLACEHOLDER
-     Reemplazar por las coordenadas reales cuando el cliente las levante.
+     1. Recorrido — REAL
+     ------------------------------------------------------------
+     Trazado levantado por el cliente sobre el mapa con el editor de
+     /chutillos/admin/recorrido/. 18 puntos, 3.51 km.
+     Esto ya NO es dato de relleno.
      ============================================================ */
   const RECORRIDO = [
-    [-19.57600, -65.76900],
-    [-19.57850, -65.76620],
-    [-19.58090, -65.76380],
-    [-19.58310, -65.76140],
-    [-19.58560, -65.75950],
-    [-19.58800, -65.75780],
-    [-19.59050, -65.75610],
-    [-19.59280, -65.75420],
-    [-19.59500, -65.75220],
-    [-19.59700, -65.75020],
-    [-19.59880, -65.74830],
-    [-19.60050, -65.74640]
+    [-19.591296, -65.757334],
+    [-19.591794, -65.758898],
+    [-19.592381, -65.759826],
+    [-19.592310, -65.761709],
+    [-19.592067, -65.761778],
+    [-19.591016, -65.761033],
+    [-19.589869, -65.760705],
+    [-19.588418, -65.760974],
+    [-19.586265, -65.759590],
+    [-19.584153, -65.760942],
+    [-19.582899, -65.761135],
+    [-19.582171, -65.760823],
+    [-19.582596, -65.760362],
+    [-19.578876, -65.757605],
+    [-19.580675, -65.753421],
+    [-19.584931, -65.756629],
+    [-19.585800, -65.757101],
+    [-19.586134, -65.757122]
   ];
 
   /* ============================================================
      2. Checkpoints — PLACEHOLDER
+     ------------------------------------------------------------
+     Se reparten de forma pareja sobre el recorrido real, pero ni su
+     ubicación ni su nombre son los definitivos.
+
+     Los nombres son deliberadamente genéricos. Antes decían cosas como
+     "Mercado Uyuni" o "Av. Antofagasta", que sonaban autoritativas siendo
+     inventadas: ahora que caen sobre coordenadas del recorrido verdadero,
+     un nombre falso es peor que uno obviamente provisional. La página
+     pública los muestra como "Vista en …", así que tienen que ser
+     reemplazados por referencias reales antes del evento — con el editor
+     de /chutillos/admin/recorrido/, modo "Puntos de control".
      ============================================================ */
   const NOMBRES_CHECKPOINT = [
-    'Inicio — Av. Panamericana',
-    'Cruce Villa Imperial',
-    'Plaza del Minero',
-    'Av. Antofagasta',
-    'Mercado Uyuni',
-    'Av. Universitaria',
-    'Puente San Clemente',
-    'Av. Sevilla',
-    'Rotonda Cerro Rico',
-    'Llegada — Campo Ferial'
+    'Punto de control 01',
+    'Punto de control 02',
+    'Punto de control 03',
+    'Punto de control 04',
+    'Punto de control 05',
+    'Punto de control 06',
+    'Punto de control 07',
+    'Punto de control 08',
+    'Punto de control 09',
+    'Punto de control 10'
   ];
 
   const checkpoints = NOMBRES_CHECKPOINT.map((nombre, i) => {

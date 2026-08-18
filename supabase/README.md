@@ -165,16 +165,21 @@ conexiones concurrentes, pero conviene mirar el uso en el dashboard el
 día 28 y tener a mano la posibilidad de subir de plan si el tráfico
 sorprende.
 
-**El recorrido dibujado hoy es referencial.** Está marcado como tal en el
-mapa mientras `RECORRIDO_OFICIAL` siga en `false` dentro de `config.js`.
+**El recorrido ya es el real.** 18 puntos, 3.51 km, levantados sobre el
+mapa con el editor. Están en `mock-data.js` y en
+[`seed-recorrido.sql`](seed-recorrido.sql) para cargar en Supabase.
+`RECORRIDO_OFICIAL` está en `true`, así que el mapa público ya no muestra
+el aviso de trazado provisional.
 
-Para cargar el trazado verdadero hay una herramienta en
-**`/chutillos/admin/recorrido/`**: se marcan los puntos haciendo clic
-sobre el mapa real, se arrastran para corregir, y genera la salida en dos
-formatos — el arreglo para `mock-data.js` y el `INSERT` para la tabla
-`recorrido` de Supabase. La misma pantalla sirve para ubicar los puntos
-de control con su nombre.
+**Los checkpoints todavía NO son reales.** Se reparten de forma pareja
+sobre el recorrido verdadero, pero ni su ubicación ni su nombre son los
+definitivos — se llaman "Punto de control 01…10" justamente para que
+nadie los confunda con referencias reales. La página pública los muestra
+como *"Vista en …"*, así que un nombre inventado ahí sería información
+falsa para el público.
 
-Conviene dibujarlo con bastante zoom: la precisión del resultado es la
-del zoom al que se hizo clic. Cuando el trazado cargado sea el oficial,
-poner `RECORRIDO_OFICIAL: true` y el aviso del mapa desaparece solo.
+Para ubicarlos: **`/chutillos/admin/recorrido/`**, modo "Puntos de
+control". Se escribe el nombre, se hace clic donde va, y la pantalla
+genera el `INSERT` con los nombres ya escapados. Conviene trabajar con
+bastante zoom: la precisión del resultado es la del zoom al que se hizo
+clic.
