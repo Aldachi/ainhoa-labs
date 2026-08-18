@@ -67,7 +67,13 @@
 
     /* Centro y zoom inicial del mapa (Potosí, zona baja) */
     MAPA_CENTRO: [-19.5892, -65.7580],
-    MAPA_ZOOM: 14
+    MAPA_ZOOM: 14,
+
+    /* Mientras esté en false, el mapa público muestra el aviso de que el
+       trazado es referencial. Poner en true recién cuando el recorrido
+       cargado sea el verdadero: es lo que evita que el aviso quede puesto
+       por olvido, o que se saque antes de tiempo. */
+    RECORRIDO_OFICIAL: false
   };
 
   /* Override por querystring, solo para pruebas */

@@ -90,6 +90,17 @@ lugar del dataset de ejemplo.
 
 Para probar sin tocar el archivo: `?mock=0` o `?mock=1` en la URL.
 
+> ⚠️ **Al editar `config.js`, subí el número de versión de los assets.**
+> Las páginas del módulo referencian sus scripts como `config.js?v=1`. Si
+> no se incrementa, los navegadores que ya visitaron el sitio pueden
+> seguir sirviendo la versión anterior desde caché — y durante el evento
+> eso significa que la página mostraría datos de ejemplo sin avisar. Para
+> subir todas de una:
+>
+> ```bash
+> node -e "const fs=require('fs');['chutillos/index.html','chutillos/portador/index.html','chutillos/checkpoint/index.html','chutillos/admin/index.html','chutillos/admin/recorrido/index.html'].forEach(p=>fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace(/\?v=\d+/g,'?v=2'),'utf8'))"
+> ```
+
 ---
 
 ## 5. Configurar el Worker de Cloudflare
@@ -155,5 +166,15 @@ día 28 y tener a mano la posibilidad de subir de plan si el tráfico
 sorprende.
 
 **El recorrido dibujado hoy es referencial.** Está marcado como tal en el
-mapa. Hay que reemplazarlo por las coordenadas reales antes del 28, o
-quitar el aviso solo cuando ya sean las verdaderas.
+mapa mientras `RECORRIDO_OFICIAL` siga en `false` dentro de `config.js`.
+
+Para cargar el trazado verdadero hay una herramienta en
+**`/chutillos/admin/recorrido/`**: se marcan los puntos haciendo clic
+sobre el mapa real, se arrastran para corregir, y genera la salida en dos
+formatos — el arreglo para `mock-data.js` y el `INSERT` para la tabla
+`recorrido` de Supabase. La misma pantalla sirve para ubicar los puntos
+de control con su nombre.
+
+Conviene dibujarlo con bastante zoom: la precisión del resultado es la
+del zoom al que se hizo clic. Cuando el trazado cargado sea el oficial,
+poner `RECORRIDO_OFICIAL: true` y el aviso del mapa desaparece solo.

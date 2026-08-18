@@ -73,6 +73,11 @@
       mapa.fitBounds(linea.getBounds(), { padding: [30, 30] });
     }
 
+    /* El aviso de trazado provisional solo se muestra mientras el
+       recorrido no sea el oficial. */
+    const nota = document.getElementById('mapa-nota');
+    if (nota && CFG.RECORRIDO_OFICIAL) nota.hidden = true;
+
     /* Checkpoints como referencia discreta */
     checkpoints.forEach(c => {
       L.marker([c.lat, c.lng], {
