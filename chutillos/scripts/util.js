@@ -36,7 +36,26 @@
       return 'viejo';
     },
 
-    /** Normaliza para busqueda: minusculas y sin acentos.
+    /* Puntuacion que se ignora al buscar. Varias fraternidades del rol
+       llevan apostrofo ("Jaik'as", "Warak'aku", "Tolck'as"), comillas
+       ("Mejillones \"B\"") o puntos ("I.N.A.D.I."). Nadie los va a teclear
+       en un celular parado en la calle, asi que se descartan de los dos
+       lados de la comparacion. Se listan por codepoint para no depender
+       de caracteres raros en el codigo fuente. */
+    _PUNTUACION: new Set([
+      0x27,   // '  apostrofo
+      0x22,   // "  comilla doble
+      0x2018, // comilla simple izquierda
+      0x2019, // comilla simple derecha (la que ponen los celulares)
+      0x201C, // comilla doble izquierda
+      0x201D, // comilla doble derecha
+      0x2E,   // .  punto
+      0x2D,   // -  guion
+      0x2013, // guion medio
+      0x2014  // raya
+    ]),
+
+    /** Normaliza para busqueda: minusculas, sin acentos y sin puntuacion.
         Se recorre por codepoint en vez de usar un regex con marcas
         combinantes, para no depender de caracteres invisibles en el
         codigo fuente. */
@@ -47,6 +66,7 @@
         const c = ch.codePointAt(0);
         /* Bloque Combining Diacritical Marks */
         if (c >= 0x300 && c <= 0x36f) continue;
+        if (this._PUNTUACION.has(c)) continue;
         out += ch;
       }
       return out.toLowerCase();

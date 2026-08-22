@@ -13,8 +13,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="../../styles/main.css?v=2">
-  <link rel="stylesheet" href="../styles/chutillos.css?v=2">
+  <link rel="stylesheet" href="../../styles/main.css?v=5">
+  <link rel="stylesheet" href="../styles/chutillos.css?v=5">
 </head>
 <body class="chx">
 
@@ -60,11 +60,16 @@
   <div class="chx-admin" id="panel-admin" hidden>
 
     <div id="aviso-mock" class="chx-aviso" hidden>
-      <strong>Modo de datos de ejemplo.</strong>
-      Estás viendo las 115 fraternidades de relleno. Los cambios que hagas
-      acá no se guardan en ninguna base de datos y se pierden al recargar.
-      Para operar sobre datos reales hay que configurar Supabase y el Worker
+      <strong>Sin base de datos conectada.</strong>
+      Los cambios que hagas acá no se guardan y se pierden al recargar.
+      Para operar de verdad hay que configurar Supabase y el Worker
       (ver <code>supabase/README.md</code>).
+      <br><br>
+      Los <strong>115 nombres son los del Rol de Ingreso oficial</strong> de
+      la AFFAP, pero el orden y los horarios son los de la Pre-Entrada
+      (22 y 23 de agosto): hay que reemplazarlos por los del rol del
+      28-29-30 y recién ahí poner <code>ROL_OFICIAL: true</code>.
+      Los checkpoints todavía están sin ubicar.
     </div>
 
     <div class="chx-tabs">
@@ -149,10 +154,10 @@
     </div>
   </footer>
 
-  <script src="../scripts/config.js?v=2"></script>
-  <script src="../scripts/mock-data.js?v=2"></script>
-  <script src="../scripts/data.js?v=2"></script>
-  <script src="../scripts/util.js?v=2"></script>
-  <script src="../scripts/admin.js?v=2"></script>
+  <script src="../scripts/config.js?v=5"></script>
+  <script src="../scripts/mock-data.js?v=5"></script>
+  <script src="../scripts/data.js?v=5"></script>
+  <script src="../scripts/util.js?v=5"></script>
+  <script src="../scripts/admin.js?v=5"></script>
 </body>
 </html>

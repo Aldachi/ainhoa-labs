@@ -73,9 +73,19 @@
        mapa por el cliente, así que el aviso de "trazado referencial" ya no
        corresponde.
 
-       Ojo: esto habla solo del recorrido. Los checkpoints y los nombres de
-       las fraternidades siguen siendo de relleno. */
-    RECORRIDO_OFICIAL: true
+       Ojo: esto habla solo del recorrido. Los checkpoints siguen sin
+       ubicar. */
+    RECORRIDO_OFICIAL: true,
+
+    /* Los nombres de las 115 fraternidades son los del Rol de Ingreso
+       oficial, pero el orden y los horarios cargados son los de la
+       Pre-Entrada (22 y 23 de agosto), no los de las entradas del 28-30.
+
+       Mientras esto sea false, la página pública NO muestra el horario de
+       salida: publicar una hora sin confirmar es peor que no publicar
+       ninguna, porque la gente organiza su día con eso. Poner en true
+       recién cuando esté cargado el rol definitivo de la AFFAP. */
+    ROL_OFICIAL: false
   };
 
   /* Override por querystring, solo para pruebas */

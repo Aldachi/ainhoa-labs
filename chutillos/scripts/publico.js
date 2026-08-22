@@ -196,9 +196,20 @@
 
   function pintarLista() {
     const items = visibles();
+    const hayEnEsteDia = fraternidades.some(f => f.dia === filtroDia);
 
     $vacio.hidden = items.length > 0;
     $lista.hidden = items.length === 0;
+
+    /* Un día sin rol publicado y una búsqueda sin resultados son cosas
+       distintas: decir "no se encontraron" cuando todavía no hay lista
+       hace pensar que el sitio está roto. */
+    if (items.length === 0) {
+      const d = CFG.DIAS.find(x => x.dia === filtroDia);
+      $vacio.textContent = hayEnEsteDia
+        ? 'No se encontraron fraternidades con ese nombre.'
+        : `La lista de ${d ? d.nombre.toLowerCase() : 'este día'} todavía no fue publicada por la AFFAP.`;
+    }
 
     const conDato = items.filter(f => posiciones.has(f.id)).length;
     $resumen.innerHTML =
@@ -275,12 +286,19 @@
         ? `Vista en ${U.esc(pos.checkpoint_nombre || 'punto de control')}`
         : 'Posición GPS';
 
+      /* El horario solo se publica si el rol cargado es el definitivo.
+         Una hora de salida equivocada hace que la gente se pierda a su
+         fraternidad, así que ante la duda no se muestra. */
+      const pie = CFG.ROL_OFICIAL
+        ? `Ingreso ${f.orden_ingreso} &middot; ${U.esc(f.hora_estimada)}`
+        : `Orden de ingreso ${f.orden_ingreso}`;
+
       m.bindPopup(
         `<b>${U.esc(f.nombre)}</b>` +
         `<div class="chx-popup-meta">` +
           `${donde}<br>` +
           `<strong>${U.esc(U.haceCuanto(pos.timestamp))}</strong><br>` +
-          `Ingreso ${f.orden_ingreso} &middot; ${U.esc(f.hora_estimada)}` +
+          pie +
         `</div>`
       );
 

@@ -40,11 +40,28 @@ archivo: las cinco tablas deben aparecer con `rowsecurity = true`.
 
 ## 3. Cargar los datos reales
 
-Cuando llegue el Rol de Ingreso de la AFFAP:
+Estado actual del padrón:
 
-1. **Fraternidades** — importar por CSV desde el Table Editor, o generar
-   los `INSERT`. Columnas: `id`, `nombre`, `tipo`, `dia`, `modo_tracking`,
-   `orden_ingreso`, `hora_estimada`, `token_portador`.
+| Dato | Estado |
+|---|---|
+| Recorrido | ✅ Real — 18 puntos, 3.51 km |
+| Nombres de las 115 fraternidades | ✅ Reales — Rol de Ingreso AFFAP |
+| Orden y horarios | ⚠️ De la Pre-Entrada (22-23 ago), no del 28-30 |
+| Día 30 (ancestrales) | ❌ Sin rol publicado |
+| Ubicación de checkpoints | ❌ Pendiente |
+| Qué fraternidad lleva GPS | ❌ Decisión del cliente |
+
+Mientras `ROL_OFICIAL` siga en `false` dentro de `config.js`, ni la página
+pública ni la de checkpoint muestran los horarios de salida: publicar una
+hora sin confirmar es peor que no publicar ninguna, porque la gente
+organiza su día con eso.
+
+Cuando llegue el Rol de Ingreso definitivo del 28-29-30:
+
+1. **Fraternidades** — actualizar `orden_ingreso` y `hora_estimada` en
+   `mock-data.js`, o importar por CSV desde el Table Editor. Columnas:
+   `id`, `nombre`, `tipo`, `dia`, `modo_tracking`, `orden_ingreso`,
+   `hora_estimada`, `token_portador`. Después poner `ROL_OFICIAL: true`.
 2. **Checkpoints** — un registro por punto, con `lat`/`lng` reales y
    `orden_en_recorrido` según la dirección del desfile.
 3. **Recorrido** — las coordenadas del trazado, en orden.

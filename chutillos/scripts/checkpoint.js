@@ -158,9 +158,17 @@
       b.dataset.reportada = String(marcada);
       b.dataset.id = f.id;
 
+      /* El horario solo se muestra si el rol cargado es el definitivo. Con
+         el rol de la Pre-Entrada, una hora de otro día en pantalla
+         confunde al voluntario justo cuando tiene que decidir rápido. El
+         orden de ingreso, en cambio, sí es la referencia que sirve. */
+      const referencia = CFG.ROL_OFICIAL
+        ? `Ingreso ${f.orden_ingreso} · ${f.hora_estimada}`
+        : `Ingreso ${f.orden_ingreso}`;
+
       const cuando = marcada
         ? U.haceCuanto(new Date(reportadas.get(f.id).ts).toISOString())
-        : `Ingreso ${f.orden_ingreso} · ${f.hora_estimada}`;
+        : referencia;
 
       b.innerHTML =
         `<span>` +
