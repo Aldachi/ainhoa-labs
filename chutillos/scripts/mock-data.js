@@ -50,35 +50,106 @@
   ];
 
   /* ============================================================
-     2. Checkpoints — PENDIENTES
+     2. Checkpoints — UBICACIÓN REAL
      ------------------------------------------------------------
-     Se reparten de forma pareja sobre el recorrido real, pero ni la
-     ubicación ni el nombre son los definitivos. Nombres deliberadamente
-     genéricos: la página pública los muestra como "Vista en …", así que
-     un nombre inventado sería información falsa.
+     7 puntos marcados por el cliente sobre el mapa. Los siete caen
+     exactamente sobre el trazado (desvío 0 m).
 
-     Ubicarlos con /chutillos/admin/recorrido/, modo "Puntos de control".
-     Son 7 por decisión del cliente: ~585 m de separación, con lo que una
-     fraternidad tarda entre 18 y 23 min en ir de un punto al siguiente.
+     Reparto a lo largo del recorrido (3518 m):
+
+       Punto 1     43 m del inicio   — confirma la salida
+       Punto 2    503 m                 tramo previo: 460 m
+       Punto 3    949 m                 tramo previo: 446 m
+       Punto 4   1741 m                 tramo previo: 792 m  <-- el mas largo
+       Punto 5   2306 m                 tramo previo: 565 m
+       Punto 6   2788 m                 tramo previo: 482 m
+       Punto 7   3448 m                 tramo previo: 661 m
+                                        hasta el final:  70 m
+
+     El tramo Punto 3 -> Punto 4 son 792 m: a paso de desfile, unos 27
+     minutos sin actualizar, por encima del umbral de dato viejo (25 min).
+     Las fraternidades que estén en ese tramo se van a ver en gris aunque
+     todo funcione. Se puede emparejar corriendo el Punto 3 unos 230 m
+     hacia adelante, a lat -19.586681 / lng -65.759857.
+
+     ⚠️ Los NOMBRES siguen siendo provisionales. La página pública los
+     muestra como "Vista en …", así que conviene reemplazar "Punto 1" por
+     una referencia que la gente reconozca parada en la calle.
      ============================================================ */
-  const NOMBRES_CHECKPOINT = [
-    'Punto de control 01', 'Punto de control 02', 'Punto de control 03',
-    'Punto de control 04', 'Punto de control 05', 'Punto de control 06',
-    'Punto de control 07'
+  const CHECKPOINTS_BASE = [
+    ['chk-01', 'Punto 1', 1, -19.591421, -65.757720],
+    ['chk-02', 'Punto 2', 2, -19.592184, -65.761746],
+    ['chk-03', 'Punto 3', 3, -19.588455, -65.760968],
+    ['chk-04', 'Punto 4', 4, -19.582200, -65.760791],
+    ['chk-05', 'Punto 5', 5, -19.578897, -65.757621],
+    ['chk-06', 'Punto 6', 6, -19.580664, -65.753453],
+    ['chk-07', 'Punto 7', 7, -19.585541, -65.756958]
   ];
 
-  const checkpoints = NOMBRES_CHECKPOINT.map((nombre, i) => {
-    const t = i / (NOMBRES_CHECKPOINT.length - 1);
-    const idx = Math.min(RECORRIDO.length - 1, Math.round(t * (RECORRIDO.length - 1)));
-    return {
-      id: `chk-${String(i + 1).padStart(2, '0')}`,
-      nombre,
-      orden_en_recorrido: i + 1,
-      lat: RECORRIDO[idx][0],
-      lng: RECORRIDO[idx][1],
-      token_voluntario: `vol-${String(i + 1).padStart(2, '0')}-${claveCorta(i * 977 + 13)}`
-    };
-  });
+  const checkpoints = CHECKPOINTS_BASE.map(([id, nombre, orden, lat, lng], i) => ({
+    id,
+    nombre,
+    orden_en_recorrido: orden,
+    lat,
+    lng,
+    token_voluntario: `vol-${String(orden).padStart(2, '0')}-${claveCorta(i * 977 + 13)}`
+  }));
+
+  /* ------------------------------------------------------------
+     Posición de cada checkpoint a lo largo del recorrido, como fracción
+     de 0 a 1. Se calcula proyectando cada punto sobre la polilínea.
+
+     La simulación la necesita para decidir por cuál checkpoint pasó ya una
+     fraternidad. Antes repartía por índice, dando por sentado que estaban
+     equiespaciados; con los puntos reales eso asignaría el checkpoint
+     equivocado y el ensayo previo al evento mostraría algo que no se
+     corresponde con lo que va a pasar en la calle.
+
+     Se calcula en vez de escribirse a mano para que siga siendo correcto
+     si cambian el trazado o la ubicación de los puntos.
+     ------------------------------------------------------------ */
+  const FRACCIONES_CHK = (() => {
+    /* Plano local: a esta escala la distorsión es despreciable y evita
+       trigonometría en cada iteración. */
+    const LAT_M = 111320;
+    const LNG_M = 111320 * Math.cos(-19.586 * Math.PI / 180);
+    const xy = (la, ln) => [ln * LNG_M, la * LAT_M];
+
+    const acum = [0];
+    for (let i = 1; i < RECORRIDO.length; i++) {
+      const a = xy(...RECORRIDO[i - 1]);
+      const b = xy(...RECORRIDO[i]);
+      acum.push(acum[i - 1] + Math.hypot(b[0] - a[0], b[1] - a[1]));
+    }
+    const total = acum[acum.length - 1] || 1;
+
+    return checkpoints.map(c => {
+      const p = xy(c.lat, c.lng);
+      let mejor = { d: Infinity, s: 0 };
+
+      for (let i = 1; i < RECORRIDO.length; i++) {
+        const a = xy(...RECORRIDO[i - 1]);
+        const b = xy(...RECORRIDO[i]);
+        const vx = b[0] - a[0], vy = b[1] - a[1];
+        const L2 = vx * vx + vy * vy;
+        let t = L2 ? ((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / L2 : 0;
+        t = Math.max(0, Math.min(1, t));
+        const d = Math.hypot(p[0] - (a[0] + t * vx), p[1] - (a[1] + t * vy));
+        if (d < mejor.d) mejor = { d, s: acum[i - 1] + t * Math.sqrt(L2) };
+      }
+      return mejor.s / total;
+    });
+  })();
+
+  /* Último checkpoint que la fraternidad ya dejó atrás, o null si todavía
+     no llegó al primero. */
+  function checkpointPasado(p) {
+    let idx = -1;
+    for (let i = 0; i < FRACCIONES_CHK.length; i++) {
+      if (p >= FRACCIONES_CHK[i]) idx = i;
+    }
+    return idx < 0 ? null : checkpoints[idx];
+  }
 
   /* ============================================================
      3. Fraternidades — NOMBRES REALES
@@ -318,11 +389,11 @@
           timestamp: new Date(Date.now() - (10000 + (hash(f.id) % 90000))).toISOString()
         });
       } else {
-        const idx = Math.max(0, Math.min(
-          checkpoints.length - 1,
-          Math.floor(p * checkpoints.length)
-        ));
-        const chk = checkpoints[idx];
+        const chk = checkpointPasado(p);
+        /* Salió pero todavía no llegó al primer punto: nadie la reportó
+           aún, así que no aparece en el mapa. Es exactamente lo que va a
+           pasar el día del evento. */
+        if (!chk) return;
         salida.push({
           fraternidad_id: f.id,
           origen: 'checkpoint',

@@ -48,7 +48,8 @@ Estado actual del padrón:
 | Nombres de las 115 fraternidades | ✅ Reales — Rol de Ingreso AFFAP |
 | Orden y horarios | ⚠️ De la Pre-Entrada (22-23 ago), no del 28-30 |
 | Día 30 (ancestrales) | ❌ Sin rol publicado |
-| Ubicación de los 7 checkpoints | ❌ Pendiente |
+| Ubicación de los 7 checkpoints | ✅ Real — [`seed-checkpoints.sql`](seed-checkpoints.sql) |
+| Nombres de los checkpoints | ⚠️ Provisionales ("Punto 1"…) |
 | Portadores GPS | ⛔ No se usan — `GPS_HABILITADO: false` |
 
 Mientras `ROL_OFICIAL` siga en `false` dentro de `config.js`, ni la página
