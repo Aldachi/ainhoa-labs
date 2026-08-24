@@ -63,20 +63,31 @@
     --------------------------------------------------------------------- */
     GPS_HABILITADO: false,
 
-    /* ---- Umbrales de antigüedad del dato (minutos) ------------------------
-       Calibrados para 7 checkpoints sobre 3.51 km: una fraternidad tarda
-       entre 18 y 23 minutos en ir de un punto al siguiente.
+    /* ---- Velocidad del desfile -------------------------------------------
+       Derivada del comportamiento real del evento: las salidas van de
+       08:00 a 19:25 y la última fraternidad termina entre las 23:00 y la
+       madrugada. Eso da entre 3.6 y 5.6 horas para 3.5 km.
 
-         fresco  → acaba de pasar por un punto
-         tibio   → en tránsito normal entre dos puntos
-         viejo   → algo pasa: el voluntario no la vio, o está en descanso
+         termina 23:00  →  0.98 km/h
+         termina 00:00  →  0.76 km/h
+         termina 01:00  →  0.63 km/h
 
-       Con los umbrales anteriores (5/20), pensados para tener GPS continuo,
-       casi nada habría estado nunca en verde y casi todo en rojo aunque el
-       sistema funcionara perfecto: el color habría dejado de informar.
+       Es lento porque no es una caminata: se baila, se para a descansar y
+       la banda marca el paso. TIPICA se usa para estimar la posición;
+       MIN y MAX definen el ancho de la banda de incertidumbre que se
+       dibuja en el mapa.
+
+       Vale la pena revisar estos tres números después del primer día con
+       datos reales: son lo que más afecta la exactitud del mapa.
     --------------------------------------------------------------------- */
-    FRESCO_MIN: 10,
-    TIBIO_MIN: 25,
+    VELOCIDAD_KMH: 0.80,
+    VELOCIDAD_MIN_KMH: 0.55,
+    VELOCIDAD_MAX_KMH: 1.30,
+
+    /* Largo mínimo de la banda en el mapa, en metros. Una fraternidad con
+       sus danzantes y su banda ocupa fácil 150 m de calle, así que aunque
+       la incertidumbre sea chica se dibuja con cuerpo, no como un punto. */
+    LARGO_MINIMO_M: 140,
 
     /* ---- Evento ---------------------------------------------------------- */
     DIAS: [

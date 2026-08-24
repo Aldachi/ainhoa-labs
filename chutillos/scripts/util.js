@@ -27,12 +27,68 @@
       return `hace ${h} h ${resto} min`;
     },
 
-    /** Clasifica la antigüedad del dato: 'fresco' | 'tibio' | 'viejo' */
+    /* ============================================================
+       Estimación de dónde va una fraternidad
+       ------------------------------------------------------------
+       Sabemos que pasó por un punto de control a una hora dada. De ahí en
+       adelante es inferencia, no medición, así que en vez de fingir una
+       posición exacta se calcula un TRAMO donde puede estar:
+
+         sLento   ← si viene despacio o paró a descansar
+         sRapido  ← si viene ligero
+
+       El tramo se corta en el checkpoint siguiente: si lo hubiera pasado,
+       tendríamos un reporte nuevo. Cuanto más tiempo sin noticias, más
+       ancha la banda — que es exactamente lo que hay que comunicar.
+
+       La antigüedad se mide contra lo que tarda ESE tramo, no contra un
+       número global: el trecho del Punto 3 al 4 son 792 m y lleva casi una
+       hora, mientras que del 2 al 3 son 446 m y lleva media. Con un umbral
+       único, el tramo largo se vería siempre en alerta sin motivo.
+       ============================================================ */
+    estimar(pos, geo) {
+      if (!pos || !geo) return null;
+
+      const sPrev = geo.sDe(pos.checkpoint_id);
+      if (sPrev == null) return null;
+
+      const sig = geo.siguiente(pos.checkpoint_id);
+      const sNext = sig ? sig.s : geo.total;
+
+      const horas = Math.max(0, (Date.now() - new Date(pos.timestamp).getTime()) / 3600000);
+      const avance = kmh => Math.min(sPrev + kmh * 1000 * horas, sNext);
+
+      const sLento  = avance(CFG.VELOCIDAD_MIN_KMH);
+      const sRapido = avance(CFG.VELOCIDAD_MAX_KMH);
+      const sTipico = avance(CFG.VELOCIDAD_KMH);
+
+      /* Cuánto debería tardar este tramo, y qué proporción lleva */
+      const largoTramo = Math.max(1, sNext - sPrev);
+      const esperadoMin = largoTramo / (CFG.VELOCIDAD_KMH * 1000) * 60;
+      const razon = (horas * 60) / esperadoMin;
+
+      let frescura;
+      if (razon < 0.35)      frescura = 'fresco';   // recién pasó por el punto
+      else if (razon <= 1.1) frescura = 'tibio';    // en tránsito normal
+      else                   frescura = 'viejo';    // ya debería haber llegado
+
+      return {
+        sPrev, sNext, sLento, sRapido, sTipico,
+        razon,
+        frescura,
+        minutos: horas * 60,
+        esperadoMin,
+        enElUltimoTramo: !sig
+      };
+    },
+
+    /** Antigüedad del dato sin contexto de tramo. La usa el panel admin,
+        donde interesa "hace cuánto que no sé nada" más que la posición. */
     frescura(iso) {
       if (!iso) return 'sin-dato';
       const min = (Date.now() - new Date(iso).getTime()) / 60000;
-      if (min <= CFG.FRESCO_MIN) return 'fresco';
-      if (min <= CFG.TIBIO_MIN) return 'tibio';
+      if (min <= 20) return 'fresco';
+      if (min <= 60) return 'tibio';
       return 'viejo';
     },
 

@@ -281,22 +281,41 @@
   max-width: calc(100% - 1rem);
 }
 
-/* ---- Marcadores ---- */
+/* ---- Fraternidades sobre el trazado ----
+   Cada una es una banda que cubre el tramo donde puede estar, más una
+   cabeza que marca dónde va el frente de la comparsa. */
 
-.chx-marcador {
-  width: 14px;
-  height: 14px;
+.chx-banda {
+  transition: stroke-width 200ms var(--ease-out), opacity 300ms var(--ease-out);
+}
+
+.chx-banda.destacada {
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.55));
+}
+
+.chx-cabeza {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--color-accent);
   border: 2px solid #000;
   box-shadow: 0 0 0 1px var(--color-accent);
 }
 
-.chx-marcador.destacado {
-  width: 20px;
-  height: 20px;
+.chx-cabeza.destacada {
+  width: 16px;
+  height: 16px;
   background: #fff;
-  box-shadow: 0 0 0 2px var(--color-accent), 0 0 16px rgba(0, 102, 204, 0.8);
+  box-shadow: 0 0 0 2px var(--color-accent), 0 0 18px rgba(0, 102, 204, 0.9);
+  animation: chx-cabeza-viva 2.4s ease-in-out infinite;
+}
+
+/* Latido lento en la seleccionada. No simula movimiento —a paso de
+   desfile el avance real es de centímetros por segundo, invisible— sino
+   que transmite que el dato está vivo y se sigue actualizando. */
+@keyframes chx-cabeza-viva {
+  0%, 100% { box-shadow: 0 0 0 2px var(--color-accent), 0 0 18px rgba(0, 102, 204, 0.9); }
+  50%      { box-shadow: 0 0 0 4px var(--color-accent), 0 0 26px rgba(0, 102, 204, 1); }
 }
 
 .chx-marcador-chk {
@@ -686,6 +705,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .chx-estado[data-estado="vivo"] .chx-punto { animation: none; }
+  .chx-cabeza.destacada { animation: none; }
+  .chx-banda { transition: none; }
   .chx-toast { transition: none; }
 }
 

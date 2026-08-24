@@ -170,6 +170,18 @@ npx wrangler deploy
 
 ## 7. Cosas que conviene tener presentes el día del evento
 
+**La velocidad del desfile es el número más importante de la config.**
+`VELOCIDAD_KMH` está en 0.80 km/h, derivada de que las salidas van de
+08:00 a 19:25 y la última fraternidad termina entre las 23:00 y la
+madrugada. De ahí sale todo lo demás: dónde se dibuja cada fraternidad en
+el mapa, cuánto se ensancha su banda y cuándo se marca como demorada.
+
+Después del primer día conviene ajustarla con datos reales. Basta con
+mirar en la tabla `reportes_checkpoint` cuánto tardó una fraternidad entre
+dos puntos y dividir la distancia del tramo por ese tiempo. Si el mapa se
+ve "adelantado" respecto de la realidad, la velocidad está alta; si las
+bandas se quedan pegadas al punto anterior, está baja.
+
 **No hay respaldo si un checkpoint se cae.** Al no usar portadores GPS,
 las 115 fraternidades dependen íntegramente de los 7 puntos de control. Si
 un voluntario no llega, se le agota la batería o se va sin avisar, las
