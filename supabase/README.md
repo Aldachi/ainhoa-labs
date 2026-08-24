@@ -48,8 +48,8 @@ Estado actual del padrón:
 | Nombres de las 115 fraternidades | ✅ Reales — Rol de Ingreso AFFAP |
 | Orden y horarios | ⚠️ De la Pre-Entrada (22-23 ago), no del 28-30 |
 | Día 30 (ancestrales) | ❌ Sin rol publicado |
-| Ubicación de checkpoints | ❌ Pendiente |
-| Qué fraternidad lleva GPS | ❌ Decisión del cliente |
+| Ubicación de los 7 checkpoints | ❌ Pendiente |
+| Portadores GPS | ⛔ No se usan — `GPS_HABILITADO: false` |
 
 Mientras `ROL_OFICIAL` siga en `false` dentro de `config.js`, ni la página
 pública ni la de checkpoint muestran los horarios de salida: publicar una
@@ -169,12 +169,21 @@ npx wrangler deploy
 
 ## 7. Cosas que conviene tener presentes el día del evento
 
-**El Wake Lock es el punto frágil del portador GPS.** Si la pantalla del
-celular se apaga, el navegador congela los temporizadores y la transmisión
-se detiene. La página pide un Wake Lock para evitarlo, pero conviene que
-cada portador lleve **batería portátil** y tenga el brillo al mínimo. Es
-una limitación real de cualquier tracker que corra en el navegador, no de
-esta implementación en particular.
+**No hay respaldo si un checkpoint se cae.** Al no usar portadores GPS,
+las 115 fraternidades dependen íntegramente de los 7 puntos de control. Si
+un voluntario no llega, se le agota la batería o se va sin avisar, las
+fraternidades que pasen por ahí quedan sin actualizar hasta el punto
+siguiente — casi 20 minutos más de lo normal. Por eso el plan de dotación
+incluye **relevos flotantes**: gente sin puesto fijo que cubre huecos y
+refuerza donde se amontona.
+
+Vale la pena que cada voluntario lleve batería portátil, aunque la página
+de checkpoint consume poquísimo comparada con la de GPS.
+
+> El código del portador GPS sigue completo y probado. Si en otra edición
+> se decide usarlo, alcanza con poner `GPS_HABILITADO: true` en
+> `config.js` y listar en `mock-data.js` qué órdenes de ingreso llevan
+> portador.
 
 **El plan gratuito de Supabase tiene límites.** La lectura pública usa
 polling en vez de websockets justamente para no chocar contra el tope de

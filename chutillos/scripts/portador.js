@@ -51,6 +51,18 @@
      Arranque
      ============================================================ */
   async function iniciar() {
+    /* Los enlaces de portador se repartieron alguna vez; si la modalidad
+       queda desactivada hay que decirlo con claridad, no dejar que parezca
+       un enlace roto ni que alguien transmita para nada. */
+    if (!CFG.GPS_HABILITADO) {
+      return mostrarError(
+        'Seguimiento por GPS no vigente',
+        'Para Ch\'utillos 2026 el recorrido se sigue con puntos de control, ' +
+        'sin portadores con GPS. No hace falta que hagas nada: podés cerrar ' +
+        'esta página. Si te pidieron usarla, escribinos a Ainhoa Labs.'
+      );
+    }
+
     if (!token) return mostrarError();
 
     try {
@@ -83,9 +95,11 @@
     $('btn-detener').addEventListener('click', detener);
   }
 
-  function mostrarError() {
+  function mostrarError(titulo, texto) {
+    if (titulo) $('error-titulo').textContent = titulo;
+    if (texto) $('error-texto').textContent = texto;
     $('panel-error').hidden = false;
-    pintarEstado('offline', 'Sin acceso');
+    pintarEstado('offline', titulo ? 'No vigente' : 'Sin acceso');
   }
 
   /* ============================================================

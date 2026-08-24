@@ -52,11 +52,31 @@
     COLA_REINTENTO_MAX_MS: 60000,
     COLA_MAX_INTENTOS: 100,
 
-    /* ---- Umbrales de antigüedad del dato (minutos) ------------------------
-       Se usan para etiquetar cuán fresca es la última posición conocida.
+    /* ---- Portadores GPS ---------------------------------------------------
+       En false no se genera ningún token de portador, el panel admin
+       oculta esa sección y la página de portador avisa que no está en uso.
+
+       Para Ch'utillos 2026 se decidió cubrir todo con checkpoints, así que
+       queda apagado. El código del portador se conserva funcionando: si
+       más adelante se suman portadores, alcanza con volver a ponerlo en
+       true y marcar las fraternidades como modo_tracking 'gps'.
     --------------------------------------------------------------------- */
-    FRESCO_MIN: 5,
-    TIBIO_MIN: 20,
+    GPS_HABILITADO: false,
+
+    /* ---- Umbrales de antigüedad del dato (minutos) ------------------------
+       Calibrados para 7 checkpoints sobre 3.51 km: una fraternidad tarda
+       entre 18 y 23 minutos en ir de un punto al siguiente.
+
+         fresco  → acaba de pasar por un punto
+         tibio   → en tránsito normal entre dos puntos
+         viejo   → algo pasa: el voluntario no la vio, o está en descanso
+
+       Con los umbrales anteriores (5/20), pensados para tener GPS continuo,
+       casi nada habría estado nunca en verde y casi todo en rojo aunque el
+       sistema funcionara perfecto: el color habría dejado de informar.
+    --------------------------------------------------------------------- */
+    FRESCO_MIN: 10,
+    TIBIO_MIN: 25,
 
     /* ---- Evento ---------------------------------------------------------- */
     DIAS: [

@@ -167,6 +167,10 @@
 
     const portadores = fraternidades.filter(f => f.modo_tracking === 'gps');
 
+    /* Sin portadores GPS la sección entera se oculta: una tabla vacía
+       hace dudar de si falta cargar algo o si está roto. */
+    $('seccion-portadores').hidden = !CFG.GPS_HABILITADO || portadores.length === 0;
+
     $('tbody-portadores').innerHTML = portadores.map(f => {
       const url = `${base}/portador/?t=${encodeURIComponent(f.token_portador || '')}`;
       return `

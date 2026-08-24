@@ -58,12 +58,13 @@
      un nombre inventado sería información falsa.
 
      Ubicarlos con /chutillos/admin/recorrido/, modo "Puntos de control".
-     El cálculo de dotación sugiere 8 puntos (~500 m de separación).
+     Son 7 por decisión del cliente: ~585 m de separación, con lo que una
+     fraternidad tarda entre 18 y 23 min en ir de un punto al siguiente.
      ============================================================ */
   const NOMBRES_CHECKPOINT = [
     'Punto de control 01', 'Punto de control 02', 'Punto de control 03',
     'Punto de control 04', 'Punto de control 05', 'Punto de control 06',
-    'Punto de control 07', 'Punto de control 08'
+    'Punto de control 07'
   ];
 
   const checkpoints = NOMBRES_CHECKPOINT.map((nombre, i) => {
@@ -222,15 +223,17 @@
   ];
 
   /* ------------------------------------------------------------
-     Qué fraternidad lleva portador con GPS — DECISIÓN PENDIENTE
+     Modo de seguimiento
 
-     Por ahora se marcan algunas repartidas a lo largo de la jornada, para
-     que el mapa muestre puntos GPS en todo el recorrido y no solo al
-     principio. La selección real la define el cliente según qué
-     fraternidades convocan más público y cuáles consiguen portador.
+     Para Ch'utillos 2026 se decidió no usar portadores GPS: las 115
+     fraternidades se cubren íntegramente con los puntos de control.
+
+     Si el plan vuelve a cambiar, alcanza con poner GPS_HABILITADO en true
+     dentro de config.js y listar acá los órdenes de ingreso que lleven
+     portador. El resto del sistema ya lo soporta.
      ------------------------------------------------------------ */
-  const CON_GPS_DIA_28 = [1, 8, 15, 23, 31, 38, 46, 54];
-  const CON_GPS_DIA_29 = [1, 9, 17, 25, 33, 41, 49];
+  const CON_GPS_DIA_28 = [];
+  const CON_GPS_DIA_29 = [];
 
   const fraternidades = [];
   let n = 0;
@@ -240,9 +243,10 @@
   /* Día 30 (danzas ancestrales): sin rol publicado todavía. */
 
   function construir(lista, dia, tipo, conGps) {
+    const gpsActivo = window.CHUTILLOS_CONFIG.GPS_HABILITADO;
     lista.forEach(([orden, hora, nombre]) => {
       n++;
-      const gps = conGps.includes(orden);
+      const gps = gpsActivo && conGps.includes(orden);
       fraternidades.push({
         id: `fr-${String(n).padStart(3, '0')}`,
         nombre,
