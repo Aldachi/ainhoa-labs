@@ -342,68 +342,96 @@
      a estas funciones y no queda rastro de esto.
      ============================================================ */
 
+  const CFG = window.CHUTILLOS_CONFIG;
   const T0 = Date.now();
-  const estadoSim = new Map();
 
-  fraternidades.forEach((f, i) => {
-    estadoSim.set(f.id, {
-      offset: ((i * 37) % 90) / 100,
-      velocidad: 1 / ((40 + (i % 31)) * 60 * 1000),
-      activa: (i % 8) !== 3
-    });
-  });
+  /* Reloj virtual: la vista arranca con el evento ya empezado, para no
+     tener que esperar horas a que haya algo en el mapa. Desde ahí el
+     tiempo corre normal. */
+  const MINUTO_INICIAL = 265;          // ~12:25 de la jornada
+  const HORA_ARRANQUE = 8 * 60;        // la primera sale 08:10
 
-  function progreso(fratId) {
-    const s = estadoSim.get(fratId);
-    if (!s || !s.activa) return null;
-    const p = s.offset + (Date.now() - T0) * s.velocidad;
-    return p >= 1 ? null : p;
+  function minutoDeEvento() {
+    return MINUTO_INICIAL + (Date.now() - T0) / 60000;
   }
 
-  function puntoEnRecorrido(p) {
-    const total = RECORRIDO.length - 1;
-    const pos = p * total;
-    const i = Math.min(total - 1, Math.floor(pos));
-    const frac = pos - i;
-    const [lat1, lng1] = RECORRIDO[i];
-    const [lat2, lng2] = RECORRIDO[i + 1];
-    return [lat1 + (lat2 - lat1) * frac, lng1 + (lng2 - lng1) * frac];
+  /* Fecha real que corresponde a un minuto del evento, para que los
+     "hace 20 min" de la interfaz den valores creíbles. */
+  function fechaDeMinuto(m) {
+    return new Date(Date.now() - (minutoDeEvento() - m) * 60000);
+  }
+
+  function horaAMinutos(hhmm) {
+    const [h, m] = String(hhmm).split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  /* Largo del recorrido en metros, y a qué velocidad se avanza.
+     Todas van al mismo ritmo: en un desfile no se adelantan entre sí. Lo
+     que las separa es a qué hora salió cada una y cuánto se atrasó. */
+  const METROS_POR_MIN = CFG.VELOCIDAD_KMH * 1000 / 60;
+
+  const LARGO_RUTA = (() => {
+    const R = 6371000, rad = Math.PI / 180;
+    let t = 0;
+    for (let i = 1; i < RECORRIDO.length; i++) {
+      const [la1, ln1] = RECORRIDO[i - 1], [la2, ln2] = RECORRIDO[i];
+      const dLa = (la2 - la1) * rad, dLn = (ln2 - ln1) * rad;
+      const a = Math.sin(dLa / 2) ** 2 +
+                Math.cos(la1 * rad) * Math.cos(la2 * rad) * Math.sin(dLn / 2) ** 2;
+      t += 2 * R * Math.asin(Math.sqrt(a));
+    }
+    return t;
+  })();
+
+  /* Minuto de evento en que sale cada una. El rol se va atrasando a lo
+     largo del día —algo que pasa siempre— así que se suma un retraso que
+     crece con el orden de ingreso. */
+  const salidaDe = new Map();
+  fraternidades.forEach(f => {
+    const programada = horaAMinutos(f.hora_estimada) - HORA_ARRANQUE;
+    const retraso = f.orden_ingreso * 0.6 + (hash(f.id) % 7);
+    salidaDe.set(f.id, programada + retraso);
+  });
+
+  /** Metros recorridos, o null si todavía no salió o ya terminó. */
+  function avanceEnMetros(f) {
+    const enRuta = minutoDeEvento() - salidaDe.get(f.id);
+    if (enRuta <= 0) return null;
+    const m = enRuta * METROS_POR_MIN;
+    return m >= LARGO_RUTA ? null : m;
   }
 
   function ultimasPosiciones() {
     const salida = [];
 
     fraternidades.forEach(f => {
-      const p = progreso(f.id);
-      if (p === null) return;
+      const metros = avanceEnMetros(f);
+      if (metros === null) return;
 
-      if (f.modo_tracking === 'gps') {
-        const [lat, lng] = puntoEnRecorrido(p);
-        salida.push({
-          fraternidad_id: f.id,
-          origen: 'gps',
-          lat: +(lat + ruido(f.id, 1) * 0.00035).toFixed(6),
-          lng: +(lng + ruido(f.id, 2) * 0.00035).toFixed(6),
-          checkpoint_id: null,
-          checkpoint_nombre: null,
-          timestamp: new Date(Date.now() - (10000 + (hash(f.id) % 90000))).toISOString()
-        });
-      } else {
-        const chk = checkpointPasado(p);
-        /* Salió pero todavía no llegó al primer punto: nadie la reportó
-           aún, así que no aparece en el mapa. Es exactamente lo que va a
-           pasar el día del evento. */
-        if (!chk) return;
-        salida.push({
-          fraternidad_id: f.id,
-          origen: 'checkpoint',
-          lat: chk.lat,
-          lng: chk.lng,
-          checkpoint_id: chk.id,
-          checkpoint_nombre: chk.nombre,
-          timestamp: new Date(Date.now() - (60000 + (hash(f.id) % 1500000))).toISOString()
-        });
-      }
+      const p = metros / LARGO_RUTA;
+      const chk = checkpointPasado(p);
+
+      /* Salió pero todavía no llegó al primer punto: nadie la reportó aún,
+         así que no aparece en el mapa. Es exactamente lo que va a pasar el
+         día del evento. */
+      if (!chk) return;
+
+      /* El reporte lleva la hora en que la comparsa cruzó ESE punto, no la
+         de ahora. Es lo que hace que "confirmada hace 25 min" sea un dato
+         creíble y que la banda tenga de dónde avanzar. */
+      const metrosDelChk = FRACCIONES_CHK[checkpoints.indexOf(chk)] * LARGO_RUTA;
+      const minutoDelPaso = salidaDe.get(f.id) + metrosDelChk / METROS_POR_MIN;
+
+      salida.push({
+        fraternidad_id: f.id,
+        origen: 'checkpoint',
+        lat: chk.lat,
+        lng: chk.lng,
+        checkpoint_id: chk.id,
+        checkpoint_nombre: chk.nombre,
+        timestamp: fechaDeMinuto(minutoDelPaso).toISOString()
+      });
     });
 
     return salida;

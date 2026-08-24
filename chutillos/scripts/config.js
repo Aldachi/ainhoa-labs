@@ -84,10 +84,24 @@
     VELOCIDAD_MIN_KMH: 0.55,
     VELOCIDAD_MAX_KMH: 1.30,
 
-    /* Largo mínimo de la banda en el mapa, en metros. Una fraternidad con
-       sus danzantes y su banda ocupa fácil 150 m de calle, así que aunque
-       la incertidumbre sea chica se dibuja con cuerpo, no como un punto. */
-    LARGO_MINIMO_M: 140,
+    /* ---- La comparsa como cadena continua --------------------------------
+       Las fraternidades van una detrás de otra: ninguna puede meterse
+       dentro de otra, y entre el final de una y el comienzo de la
+       siguiente hay apenas un hueco. El desfile es una fila continua, no
+       puntos sueltos.
+
+       Las medidas salen de la densidad real: una fraternidad tarda 4.4 h
+       en el recorrido y salen cada 11 minutos, así que hay unas 23 en la
+       calle al mismo tiempo repartidas en 3518 m — unos 150 m para cada
+       una contando el hueco.
+
+       ESPACIO_MAX_M da algo de juego para que los reportes de los
+       checkpoints sigan moviendo la posición: sin él la cadena quedaría
+       rígida y solo importaría dónde va la primera.
+    --------------------------------------------------------------------- */
+    LARGO_CUERPO_M: 110,
+    ESPACIO_MIN_M: 20,
+    ESPACIO_MAX_M: 130,
 
     /* ---- Evento ---------------------------------------------------------- */
     DIAS: [

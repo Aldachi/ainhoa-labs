@@ -72,7 +72,39 @@
         weight: 3,
         opacity: 0.4
       }).addTo(mapa);
-      mapa.fitBounds(linea.getBounds(), { padding: [30, 30] });
+      /* Encuadre inicial, con dos precauciones:
+
+         invalidateSize antes de medir, porque el mapa vive dentro de un
+         grid que puede no haber resuelto su alto todavía cuando se crea.
+
+         Y `animate: false`, que es lo importante: la animación de zoom de
+         Leaflet se apoya en requestAnimationFrame, y en una pestaña que
+         está en segundo plano rAF no corre. Si alguien abre el enlace y se
+         va a otra pestaña —que es lo más normal del mundo cuando te pasan
+         un link por WhatsApp— el fitBounds animado nunca llega a
+         aplicarse y al volver se encuentra el recorrido metido en una
+         esquina, al zoom por defecto. Sin animación se aplica de una y no
+         depende de que la página esté visible. Encuadrar de entrada
+         tampoco gana nada con animarse. */
+      const encuadrar = () => {
+        mapa.invalidateSize({ animate: false });
+        mapa.fitBounds(linea.getBounds(), { padding: [30, 30], animate: false });
+      };
+      encuadrar();
+      requestAnimationFrame(encuadrar);
+
+      /* Y otra vez cuando la pestaña vuelva a primer plano, por si se
+         cargó oculta y algo quedó a medias. */
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) encuadrar();
+      }, { once: true });
+
+      /* Y de nuevo si cambia el tamaño de la ventana */
+      let tempo;
+      window.addEventListener('resize', () => {
+        clearTimeout(tempo);
+        tempo = setTimeout(encuadrar, 250);
+      });
 
       /* Geometría: convierte metros de recorrido en coordenadas. Es lo que
          permite dibujar cada fraternidad como una banda sobre el trazado. */
@@ -210,12 +242,76 @@
     });
   }
 
-  function visibles() {
-    const q = U.normalizar(filtroTexto).trim();
+  function delDia() {
     return fraternidades
       .filter(f => f.dia === filtroDia)
-      .filter(f => !q || U.normalizar(f.nombre).includes(q))
       .sort((a, b) => a.orden_ingreso - b.orden_ingreso);
+  }
+
+  function visibles() {
+    const q = U.normalizar(filtroTexto).trim();
+    return delDia()
+      .filter(f => !q || U.normalizar(f.nombre).includes(q));
+  }
+
+  /* ============================================================
+     La comparsa como cadena continua
+     ------------------------------------------------------------
+     Cada banda se calculaba por separado a partir de su propio reporte, y
+     nada impedía que dos fraternidades se superpusieran — algo que en la
+     calle no pasa: una comparsa no puede meterse dentro de otra.
+
+     Acá se recorre la fila de adelante hacia atrás y se acomoda cada una
+     detrás de la anterior:
+
+       · no puede adelantarse más allá de la cola de la de adelante
+         (ESPACIO_MIN), que es lo que impide la superposición;
+       · tampoco puede quedar descolgada muy atrás (ESPACIO_MAX), porque
+         aunque los reportes de dos checkpoints lleguen con minutos de
+         diferencia, en la calle no se abre un hueco de cuadras.
+
+     Entre esos dos límites manda la estimación del checkpoint, así que los
+     reportes siguen moviendo la fila en vez de quedar decorativos.
+
+     Se calcula sobre TODAS las del día, no sobre las filtradas por la
+     búsqueda: si no, buscar "morenada" recalcularía la cadena sin las que
+     van en el medio y las posiciones saltarían.
+     ============================================================ */
+  function calcularCadena() {
+    const cadena = new Map();
+    if (!geo) return cadena;
+
+    const LARGO = CFG.LARGO_CUERPO_M;
+    let colaAnterior = null;
+
+    delDia().forEach(f => {
+      const pos = posiciones.get(f.id);
+      if (!pos) return;
+
+      const est = U.estimar(pos, geo);
+      if (!est) return;
+
+      let cabeza = est.sRapido;
+
+      if (colaAnterior !== null) {
+        const masAdelante = colaAnterior - CFG.ESPACIO_MIN_M;
+        const masAtras    = colaAnterior - CFG.ESPACIO_MAX_M;
+        cabeza = Math.min(cabeza, masAdelante);
+        cabeza = Math.max(cabeza, masAtras);
+      }
+
+      /* Si la fila viene tan apretada que empujaría a alguien antes del
+         arranque, se apoya en el kilómetro cero y se acepta que las
+         primeras queden algo juntas: es preferible a dibujarlas fuera del
+         recorrido. */
+      cabeza = Math.max(cabeza, LARGO * 0.5);
+
+      const cola = Math.max(0, cabeza - LARGO);
+      cadena.set(f.id, { cabeza, cola, est });
+      colaAnterior = cola;
+    });
+
+    return cadena;
   }
 
   function pintarLista() {
@@ -313,23 +409,17 @@
     capaMarcadores.clearLayers();
     bandas.clear();
 
+    const cadena = calcularCadena();
+
     visibles().forEach(f => {
       const pos = posiciones.get(f.id);
       if (!pos) return;
 
-      const est = U.estimar(pos, geo);
-      if (!est) return;
+      const eslabon = cadena.get(f.id);
+      if (!eslabon) return;
 
+      const { cabeza, cola, est } = eslabon;
       const destacado = seleccionada === f.id;
-
-      /* Extremos de la banda. Si la incertidumbre todavía es chica se
-         estira hacia atrás desde la cabeza: cuando el frente de la
-         comparsa cruza el punto, el resto viene atrás. */
-      let cola = est.sLento;
-      const cabeza = est.sRapido;
-      if (cabeza - cola < CFG.LARGO_MINIMO_M) {
-        cola = Math.max(0, cabeza - CFG.LARGO_MINIMO_M);
-      }
 
       const puntos = geo.tramo(cola, cabeza);
 
@@ -411,10 +501,12 @@
     if (b) {
       if (moverMapa) {
         /* Se encuadra la banda entera, no solo la cabeza: lo que interesa
-           es el tramo por donde va. */
+           es el tramo por donde va. Sin animación por lo mismo que el
+           encuadre inicial — en segundo plano no se aplicaría. */
         mapa.fitBounds(b.banda.getBounds(), {
           padding: [80, 80],
-          maxZoom: 17
+          maxZoom: 17,
+          animate: false
         });
       }
       b.marca.openPopup();
