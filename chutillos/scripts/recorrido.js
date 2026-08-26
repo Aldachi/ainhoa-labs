@@ -116,24 +116,62 @@
       return (i >= 0 && i < ordenados.length - 1) ? ordenados[i + 1] : null;
     }
 
-    /** Nombre de la vía en el metro `s`, o null si no hay tabla cargada. */
-    function calleEn(s) {
-      if (!calles || !calles.length) return null;
+    /* Los límites de calle pueden venir en metros o como id de checkpoint
+       ('chk-02'). Se resuelven una sola vez acá: en la calle el recorrido
+       se piensa por puntos de control, no por metros, y así el dato sigue
+       siendo correcto aunque después se muevan los puntos. */
+    const callesResueltas = (calles || []).map(c => {
+      const aMetros = v => {
+        if (typeof v === 'number') return v;
+        const s = sDe(v);
+        return s == null ? null : s;
+      };
+      return {
+        ...c,
+        desde: aMetros(c.desde) ?? 0,
+        hasta: aMetros(c.hasta) ?? total
+      };
+    }).filter(c => c.hasta > c.desde)
+      .sort((a, b) => a.desde - b.desde);
+
+    /** Tramo de vía en el metro `s`, o null si no hay tabla cargada. */
+    function calleObjEn(s) {
+      if (!callesResueltas.length) return null;
       const d = Math.max(0, Math.min(total, s));
-      const c = calles.find(x => d >= x.desde && d < x.hasta);
-      return c ? c.nombre : calles[calles.length - 1].nombre;
+      return callesResueltas.find(x => d >= x.desde && d < x.hasta)
+          || callesResueltas[callesResueltas.length - 1];
+    }
+
+    /** Nombre de la vía en el metro `s`. */
+    function calleEn(s) {
+      const c = calleObjEn(s);
+      return c ? c.nombre : null;
+    }
+
+    /** ¿El metro `s` cae en el tramo final del recorrido? */
+    function esFinal(s) {
+      const c = calleObjEn(s);
+      return !!(c && c.esFinal);
+    }
+
+    /** Nombre del tramo de largada, para las que aún no salieron. */
+    function calleDeSalida() {
+      return callesResueltas.length ? callesResueltas[0].nombre : null;
     }
 
     return {
       total,
       checkpoints: ordenados,
-      calles: calles || [],
+      calles: callesResueltas,
       proyectar,
       puntoEn,
       tramo,
       sDe,
       siguiente,
-      calleEn
+      calleEn,
+      calleObjEn,
+      esFinal,
+      calleDeSalida
     };
   }
 

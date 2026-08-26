@@ -58,28 +58,44 @@
      un punto de control es una referencia interna nuestra, una avenida es
      algo que la gente ubica sin explicación.
 
-     ⚠️ VERIFICAR ANTES DEL EVENTO.
-     Los nueve nombres son los que pasó el cliente. Los cortes salen de la
-     geometría: el trazado tiene exactamente nueve tramos rectos separados
-     por giros fuertes, y los nombres se asignaron en el orden en que
-     fueron listados, asumiendo que ese es el orden del recorrido.
+     Los límites se pueden escribir de dos formas:
+       · un número      → metros desde la salida
+       · 'chk-0N'       → la altura exacta de ese punto de control
 
-     La cantidad coincide y el orden es plausible, pero yo no verifiqué
-     sobre el terreno qué nombre corresponde a cada tramo. Poner una calle
-     equivocada en la ficha es peor que no poner ninguna, porque alguien
-     puede salir a buscar a su fraternidad a la avenida que no es.
-     Contrastar cada rango con el mapa y corregir acá.
+     La segunda es la buena cuando se conoce: es como se piensa el
+     recorrido en la calle ("Tinkuy va del Punto 2 al Punto 4") y sigue
+     siendo correcta aunque después se muevan los puntos.
+
+     ⚠️ SOLO UN TRAMO ESTÁ CONFIRMADO.
+
+     Avenida Tinkuy (Punto 2 → Punto 4) la confirmó el cliente. Los otros
+     ocho son mi mejor reparto sobre los giros del trazado, siguiendo el
+     orden en que fueron listados — y ese reparto ya se demostró
+     equivocado una vez: yo tenía Tinkuy entre los metros 953 y 1233,
+     cuando en realidad abarca de 503 a 1741.
+
+     Poner una calle equivocada en la ficha es peor que no poner ninguna,
+     porque alguien sale a buscar a su fraternidad a la avenida que no es.
+     Confirmar cada tramo con la misma fórmula: "tal avenida va del Punto N
+     al Punto M".
      ============================================================ */
   const CALLES = [
-    { desde:    0, hasta:  290, nombre: 'Arco Mejillones' },
-    { desde:  290, hasta:  516, nombre: 'Calle Mejillones' },
-    { desde:  516, hasta:  953, nombre: 'Calle H. Vásquez' },
-    { desde:  953, hasta: 1233, nombre: 'Avenida Tinkuy' },
-    { desde: 1233, hasta: 1736, nombre: 'Avenida Universitaria' },
-    { desde: 1736, hasta: 2309, nombre: 'Avenida Sevilla' },
-    { desde: 2309, hasta: 2791, nombre: 'Avenida Litoral' },
-    { desde: 2791, hasta: 3372, nombre: 'Avenida Cívica' },
-    { desde: 3372, hasta: 9999, nombre: 'Plaza San Bernardo' }
+    /* --- Antes del Punto 2 --- */
+    { desde: 0,        hasta: 200,      nombre: 'Arco Mejillones',       porConfirmar: true },
+    { desde: 200,      hasta: 380,      nombre: 'Calle Mejillones',      porConfirmar: true },
+    { desde: 380,      hasta: 'chk-02', nombre: 'Calle H. Vásquez',      porConfirmar: true },
+
+    /* --- Confirmado por el cliente --- */
+    { desde: 'chk-02', hasta: 'chk-04', nombre: 'Avenida Tinkuy' },
+
+    /* --- Después del Punto 4 --- */
+    { desde: 'chk-04', hasta: 2309,     nombre: 'Avenida Universitaria', porConfirmar: true },
+    { desde: 2309,     hasta: 2791,     nombre: 'Avenida Sevilla',       porConfirmar: true },
+    { desde: 2791,     hasta: 3200,     nombre: 'Avenida Litoral',       porConfirmar: true },
+    { desde: 3200,     hasta: 'chk-07', nombre: 'Avenida Cívica',        porConfirmar: true },
+
+    /* Última: llegar acá es haber terminado el recorrido. */
+    { desde: 'chk-07', hasta: 99999,    nombre: 'Plaza San Bernardo', esFinal: true }
   ];
 
   /* ============================================================
@@ -427,12 +443,18 @@
     salidaDe.set(f.id, programada + retraso);
   });
 
-  /** Metros recorridos, o null si todavía no salió o ya terminó. */
+  /** Metros recorridos, o null si todavía no salió.
+
+      Las que ya terminaron NO desaparecen: se quedan clavadas al final,
+      que es lo que va a pasar de verdad — el voluntario del último punto
+      las reportó y ese reporte queda como su última posición conocida
+      para siempre. Si acá se devolviera null, una fraternidad que terminó
+      se vería igual que una que todavía no salió, que es justo lo
+      contrario. */
   function avanceEnMetros(f) {
     const enRuta = minutoDeEvento() - salidaDe.get(f.id);
     if (enRuta <= 0) return null;
-    const m = enRuta * METROS_POR_MIN;
-    return m >= LARGO_RUTA ? null : m;
+    return Math.min(enRuta * METROS_POR_MIN, LARGO_RUTA);
   }
 
   function ultimasPosiciones() {

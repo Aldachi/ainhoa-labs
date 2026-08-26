@@ -387,13 +387,23 @@
 
       /* Se nombra la calle y los metros hechos: es lo que le sirve a
          alguien que quiere ir a buscarla. El punto de control es una
-         referencia nuestra, no algo que el público ubique. */
+         referencia nuestra, no algo que el público ubique.
+
+         Los dos extremos se dicen con palabras, no como ausencia de dato:
+         que todavía no haya reportes no significa "no sabemos nada", sino
+         que está en la largada esperando turno. Y llegar al último tramo
+         es haber terminado. */
       const eslabon = cadenaActual.get(f.id);
       let detalle;
       if (!pos) {
-        detalle = 'Sin reportes todavía';
+        const largada = geo && geo.calleDeSalida ? geo.calleDeSalida() : null;
+        detalle = largada
+          ? `En ${U.esc(largada)} · esperando la salida`
+          : 'Esperando la salida';
       } else if (!eslabon) {
         detalle = `Vista en ${U.esc(pos.checkpoint_nombre || 'un punto de control')}`;
+      } else if (geo.esFinal && geo.esFinal(eslabon.cabeza)) {
+        detalle = `Finalizó el recorrido · ${Math.round(geo.total).toLocaleString('es-BO')} m`;
       } else {
         const calle = geo.calleEn ? geo.calleEn(eslabon.cabeza) : null;
         const metros = Math.round(eslabon.cabeza).toLocaleString('es-BO');
@@ -520,24 +530,40 @@
     const restantes = Math.max(0, Math.round(geo.total - cabeza));
     const pct = Math.round(cabeza / geo.total * 100);
 
-    let dondeVa = calle
-      ? `Va por <strong>${U.esc(calle)}</strong>`
-      : `Pasó por <strong>${punto}</strong>`;
+    const termino = geo.esFinal && geo.esFinal(cabeza);
 
-    if (est.frescura === 'viejo' && !est.enElUltimoTramo) {
+    let dondeVa;
+    if (termino) {
+      dondeVa = `<strong>Finalizó el recorrido</strong><br>Llegó a ${U.esc(calle || 'la meta')}`;
+    } else if (calle) {
+      dondeVa = `Va por <strong>${U.esc(calle)}</strong>`;
+    } else {
+      dondeVa = `Pasó por <strong>${punto}</strong>`;
+    }
+
+    if (!termino && est.frescura === 'viejo' && !est.enElUltimoTramo) {
       dondeVa += `<br><span class="chx-popup-aviso">Puede estar en un descanso</span>`;
     }
+
+    /* Si ya terminó no se muestran metros restantes: decir "finalizó el
+       recorrido" y debajo "faltan 70 m" es contradecirse en dos renglones.
+       Se da el total y la barra llena. */
+    const avance = termino
+      ? `<div class="chx-popup-avance">` +
+          `<span><strong>${Math.round(geo.total).toLocaleString('es-BO')} m</strong> recorridos</span>` +
+          `<span>recorrido completo</span>` +
+        `</div>` +
+        `<div class="chx-popup-barra" aria-hidden="true"><span style="width:100%"></span></div>`
+      : `<div class="chx-popup-avance">` +
+          `<span><strong>${recorridos.toLocaleString('es-BO')} m</strong> recorridos</span>` +
+          `<span>faltan ${restantes.toLocaleString('es-BO')} m</span>` +
+        `</div>` +
+        `<div class="chx-popup-barra" aria-hidden="true"><span style="width:${pct}%"></span></div>`;
 
     return `<b>${U.esc(f.nombre)}</b>` +
       `<div class="chx-popup-meta">` +
         `${dondeVa}` +
-        `<div class="chx-popup-avance">` +
-          `<span><strong>${recorridos.toLocaleString('es-BO')} m</strong> recorridos</span>` +
-          `<span>faltan ${restantes.toLocaleString('es-BO')} m</span>` +
-        `</div>` +
-        `<div class="chx-popup-barra" aria-hidden="true">` +
-          `<span style="width:${pct}%"></span>` +
-        `</div>` +
+        avance +
         `Confirmada en ${punto} <strong>${U.esc(U.haceCuanto(pos.timestamp))}</strong><br>` +
         pie +
       `</div>`;
