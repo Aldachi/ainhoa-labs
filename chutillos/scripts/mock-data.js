@@ -58,44 +58,29 @@
      un punto de control es una referencia interna nuestra, una avenida es
      algo que la gente ubica sin explicación.
 
-     Los límites se pueden escribir de dos formas:
-       · un número      → metros desde la salida
-       · 'chk-0N'       → la altura exacta de ese punto de control
+     Marcadas por el cliente sobre el mapa con el modo "Calles y avenidas"
+     de /chutillos/admin/recorrido/. Siete de los ocho cortes caen sobre
+     giros reales del trazado, así que fueron puestos en las esquinas y no
+     a ojo. Sin huecos ni superposiciones, cubriendo los 3518 m.
 
-     La segunda es la buena cuando se conoce: es como se piensa el
-     recorrido en la calle ("Tinkuy va del Punto 2 al Punto 4") y sigue
-     siendo correcta aunque después se muevan los puntos.
-
-     ⚠️ SOLO UN TRAMO ESTÁ CONFIRMADO.
-
-     Avenida Tinkuy (Punto 2 → Punto 4) la confirmó el cliente. Los otros
-     ocho son mi mejor reparto sobre los giros del trazado, siguiendo el
-     orden en que fueron listados — y ese reparto ya se demostró
-     equivocado una vez: yo tenía Tinkuy entre los metros 953 y 1233,
-     cuando en realidad abarca de 503 a 1741.
-
-     Poner una calle equivocada en la ficha es peor que no poner ninguna,
-     porque alguien sale a buscar a su fraternidad a la avenida que no es.
-     Confirmar cada tramo con la misma fórmula: "tal avenida va del Punto N
-     al Punto M".
+     Los límites admiten dos formas: metros desde la salida, o el id de un
+     punto de control ('chk-02') que se resuelve a su altura exacta. Acá
+     van en metros porque salieron de marcar sobre el mapa; la otra forma
+     queda disponible por si alguna vía se define por punto de control.
      ============================================================ */
   const CALLES = [
-    /* --- Antes del Punto 2 --- */
-    { desde: 0,        hasta: 200,      nombre: 'Arco Mejillones',       porConfirmar: true },
-    { desde: 200,      hasta: 380,      nombre: 'Calle Mejillones',      porConfirmar: true },
-    { desde: 380,      hasta: 'chk-02', nombre: 'Calle H. Vásquez',      porConfirmar: true },
-
-    /* --- Confirmado por el cliente --- */
-    { desde: 'chk-02', hasta: 'chk-04', nombre: 'Avenida Tinkuy' },
-
-    /* --- Después del Punto 4 --- */
-    { desde: 'chk-04', hasta: 2309,     nombre: 'Avenida Universitaria', porConfirmar: true },
-    { desde: 2309,     hasta: 2791,     nombre: 'Avenida Sevilla',       porConfirmar: true },
-    { desde: 2791,     hasta: 3200,     nombre: 'Avenida Litoral',       porConfirmar: true },
-    { desde: 3200,     hasta: 'chk-07', nombre: 'Avenida Cívica',        porConfirmar: true },
+    { desde:     0, hasta:    87, nombre: 'Arco Mejillones' },
+    { desde:    87, hasta:   278, nombre: 'Calle Mejillones' },
+    { desde:   278, hasta:   503, nombre: 'Calle H. Vásquez' },
+    { desde:   503, hasta:  1741, nombre: 'Avenida Tinkuy' },
+    /* 62 m: el recorrido apenas cruza la Universitaria entre dos giros. */
+    { desde:  1741, hasta:  1803, nombre: 'Avenida Universitaria' },
+    { desde:  1803, hasta:  2308, nombre: 'Avenida Sevilla' },
+    { desde:  2308, hasta:  2790, nombre: 'Avenida Litoral' },
+    { desde:  2790, hasta:  3402, nombre: 'Avenida Cívica' },
 
     /* Última: llegar acá es haber terminado el recorrido. */
-    { desde: 'chk-07', hasta: 99999,    nombre: 'Plaza San Bernardo', esFinal: true }
+    { desde:  3402, hasta: 99999, nombre: 'Plaza San Bernardo', esFinal: true }
   ];
 
   /* ============================================================
