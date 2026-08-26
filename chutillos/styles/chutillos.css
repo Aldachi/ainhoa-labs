@@ -359,6 +359,34 @@
   line-height: 1.5;
 }
 
+.chx-popup-meta strong { color: var(--color-text); font-weight: 500; }
+
+.chx-popup-aviso { color: #d9a441; }
+
+/* Metros hechos y por hacer */
+.chx-popup-avance {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.6rem 0 0.35rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.chx-popup-avance strong { color: var(--color-accent); font-weight: 700; }
+
+.chx-popup-barra {
+  height: 3px;
+  background: var(--color-border);
+  margin-bottom: 0.6rem;
+  overflow: hidden;
+}
+.chx-popup-barra span {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 400ms var(--ease-out);
+}
+
 /* ============================================
    LISTA DE FRATERNIDADES
    ============================================ */

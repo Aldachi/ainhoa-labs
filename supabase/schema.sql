@@ -57,6 +57,18 @@ create table if not exists recorrido (
   lng   double precision not null
 );
 
+-- Nombres de las vías por tramo, en metros desde la salida. Es lo que
+-- permite que la ficha diga "va por la Avenida Universitaria" en vez de
+-- "entre el Punto 3 y el Punto 4": un punto de control es una referencia
+-- interna, una avenida es algo que la gente ubica sin explicación.
+create table if not exists calles (
+  id      bigserial primary key,
+  desde   integer not null,
+  hasta   integer not null,
+  nombre  text not null,
+  check (hasta > desde)
+);
+
 create table if not exists posiciones_gps (
   id             bigserial primary key,
   fraternidad_id text not null references fraternidades(id) on delete cascade,
@@ -251,6 +263,7 @@ $$;
 -- ============================================
 
 alter table fraternidades        enable row level security;
+alter table calles               enable row level security;
 alter table checkpoints          enable row level security;
 alter table recorrido            enable row level security;
 alter table posiciones_gps       enable row level security;
@@ -268,6 +281,10 @@ create policy lectura_publica_chk on checkpoints
 
 drop policy if exists lectura_publica_rec on recorrido;
 create policy lectura_publica_rec on recorrido
+  for select to anon, authenticated using (true);
+
+drop policy if exists lectura_publica_calles on calles;
+create policy lectura_publica_calles on calles
   for select to anon, authenticated using (true);
 
 -- Las tablas de eventos no se leen directo: la página pública usa la
@@ -293,6 +310,7 @@ grant select (
 ) on checkpoints to anon;
 
 grant select on recorrido to anon;
+grant select on calles to anon;
 grant select on vista_ultima_posicion to anon;
 
 -- Solo estas cuatro funciones son invocables por el público.
@@ -311,7 +329,7 @@ grant execute on function fn_checkpoint_por_token(text) to anon;
 --   select tablename, rowsecurity
 --   from pg_tables
 --   where schemaname = 'public'
---     and tablename in ('fraternidades','checkpoints','recorrido',
+--     and tablename in ('fraternidades','checkpoints','recorrido','calles',
 --                       'posiciones_gps','reportes_checkpoint');
 --
 -- Y esta debe fallar con error de permisos (es la prueba de que la anon

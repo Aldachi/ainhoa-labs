@@ -24,7 +24,7 @@
 
   const LAT_M = 111320;
 
-  function construir(recorrido, checkpoints) {
+  function construir(recorrido, checkpoints, calles) {
     if (!recorrido || recorrido.length < 2) return null;
 
     const latRef = recorrido[0][0];
@@ -116,14 +116,24 @@
       return (i >= 0 && i < ordenados.length - 1) ? ordenados[i + 1] : null;
     }
 
+    /** Nombre de la vía en el metro `s`, o null si no hay tabla cargada. */
+    function calleEn(s) {
+      if (!calles || !calles.length) return null;
+      const d = Math.max(0, Math.min(total, s));
+      const c = calles.find(x => d >= x.desde && d < x.hasta);
+      return c ? c.nombre : calles[calles.length - 1].nombre;
+    }
+
     return {
       total,
       checkpoints: ordenados,
+      calles: calles || [],
       proyectar,
       puntoEn,
       tramo,
       sDe,
-      siguiente
+      siguiente,
+      calleEn
     };
   }
 

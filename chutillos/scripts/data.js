@@ -40,6 +40,10 @@
       return clonar(window.CHUTILLOS_MOCK.RECORRIDO);
     },
 
+    async getCalles() {
+      return clonar(window.CHUTILLOS_MOCK.CALLES);
+    },
+
     async getUltimasPosiciones() {
       const base = window.CHUTILLOS_MOCK.ultimasPosiciones();
 
@@ -166,6 +170,16 @@
         'recorrido?select=lat,lng&order=orden.asc'
       );
       return filas.map(p => [p.lat, p.lng]);
+    },
+
+    async getCalles() {
+      /* Tabla opcional: si todavía no se creó, la ficha simplemente no
+         muestra el nombre de la vía en lugar de romperse. */
+      try {
+        return await this._get('calles?select=desde,hasta,nombre&order=desde.asc');
+      } catch (_) {
+        return [];
+      }
     },
 
     async getUltimasPosiciones() {

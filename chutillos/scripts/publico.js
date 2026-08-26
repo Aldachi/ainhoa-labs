@@ -28,6 +28,7 @@
   let timerPoll = null;
   let timerEstimacion = null;
   let fallosSeguidos = 0;
+  let grosorCalzada = () => 6;   /* px que cubren el ancho de la calle */
 
   let filtroDia = U.diaActual() || CFG.DIAS[0].dia;
   let filtroTexto = '';
@@ -65,13 +66,42 @@
     capaMarcadores = L.layerGroup().addTo(mapa);
 
     /* Recorrido de fondo */
-    const recorrido = await Datos.getRecorrido();
+    const [recorrido, calles] = await Promise.all([
+      Datos.getRecorrido(),
+      Datos.getCalles ? Datos.getCalles() : Promise.resolve([])
+    ]);
+
     if (recorrido && recorrido.length > 1) {
       const linea = L.polyline(recorrido, {
         color: '#0066cc',
-        weight: 3,
-        opacity: 0.4
+        weight: 6,
+        opacity: 0.45,
+        lineCap: 'round',
+        lineJoin: 'round'
       }).addTo(mapa);
+
+      /* El grosor del trazado se recalcula con el zoom para que cubra el
+         ancho real de la calzada —unos 18 m— en vez de quedar como un hilo
+         fino cuando se acerca el mapa. Leaflet dibuja con grosor fijo en
+         píxeles, así que hay que convertir metros a píxeles en cada
+         cambio de zoom. */
+      const ANCHO_CALZADA_M = 18;
+      const ajustarGrosor = () => {
+        const c = mapa.getCenter();
+        const mPorPx = 40075016.686 * Math.cos(c.lat * Math.PI / 180) /
+                       (256 * Math.pow(2, mapa.getZoom()));
+        const px = ANCHO_CALZADA_M / mPorPx;
+        linea.setStyle({ weight: Math.max(5, Math.min(34, px)) });
+        if (capaMarcadores) pintarMarcadores();
+      };
+      mapa.on('zoomend', ajustarGrosor);
+      ajustarGrosor();
+      grosorCalzada = () => {
+        const c = mapa.getCenter();
+        const mPorPx = 40075016.686 * Math.cos(c.lat * Math.PI / 180) /
+                       (256 * Math.pow(2, mapa.getZoom()));
+        return Math.max(5, Math.min(34, ANCHO_CALZADA_M / mPorPx));
+      };
       /* Encuadre inicial, con dos precauciones:
 
          invalidateSize antes de medir, porque el mapa vive dentro de un
@@ -107,8 +137,9 @@
       });
 
       /* Geometría: convierte metros de recorrido en coordenadas. Es lo que
-         permite dibujar cada fraternidad como una banda sobre el trazado. */
-      geo = window.CHUTILLOS_RECORRIDO.construir(recorrido, checkpoints);
+         permite dibujar cada fraternidad como una banda sobre el trazado y
+         saber por qué calle va. */
+      geo = window.CHUTILLOS_RECORRIDO.construir(recorrido, checkpoints, calles);
     }
 
     /* El aviso de trazado provisional solo se muestra mientras el
@@ -335,6 +366,10 @@
     $resumen.innerHTML =
       `<b>${items.length}</b> fraternidades &middot; <b>${conDato}</b> con reporte reciente`;
 
+    /* Misma cadena que usa el mapa, para que la lista y el mapa no digan
+       cosas distintas de la misma fraternidad. */
+    const cadenaActual = calcularCadena();
+
     /* Reconstrucción completa: con ~115 filas es instantáneo y evita
        toda una clase de bugs de sincronización de estado. */
     const frag = document.createDocumentFragment();
@@ -350,20 +385,21 @@
       btn.type = 'button';
       if (seleccionada === f.id) btn.setAttribute('aria-current', 'true');
 
-      /* Se dice el tramo, no el punto: "va entre el 2 y el 3" es lo que
-         de verdad sabemos, y es también lo que la gente necesita para ir
-         a buscarla. */
+      /* Se nombra la calle y los metros hechos: es lo que le sirve a
+         alguien que quiere ir a buscarla. El punto de control es una
+         referencia nuestra, no algo que el público ubique. */
+      const eslabon = cadenaActual.get(f.id);
       let detalle;
       if (!pos) {
         detalle = 'Sin reportes todavía';
-      } else if (!est) {
+      } else if (!eslabon) {
         detalle = `Vista en ${U.esc(pos.checkpoint_nombre || 'un punto de control')}`;
-      } else if (est.enElUltimoTramo) {
-        detalle = `Pasó por ${U.esc(pos.checkpoint_nombre)} · último punto`;
-      } else if (est.frescura === 'viejo') {
-        detalle = `Debería estar llegando a ${U.esc(geo.siguiente(pos.checkpoint_id).nombre)}`;
       } else {
-        detalle = `Entre ${U.esc(pos.checkpoint_nombre)} y ${U.esc(geo.siguiente(pos.checkpoint_id).nombre)}`;
+        const calle = geo.calleEn ? geo.calleEn(eslabon.cabeza) : null;
+        const metros = Math.round(eslabon.cabeza).toLocaleString('es-BO');
+        detalle = calle
+          ? `${U.esc(calle)} · ${metros} m recorridos`
+          : `${metros} m recorridos`;
       }
 
       const cuando = pos ? U.haceCuanto(pos.timestamp) : '—';
@@ -427,11 +463,16 @@
          que no compite con el sistema de color del sitio. */
       const opacidad = { fresco: 0.85, tibio: 0.55, viejo: 0.28 }[est.frescura] || 0.5;
 
+      /* La banda ocupa el ancho de la calzada, igual que el trazado: la
+         comparsa toma la calle entera, no va por el borde. */
+      const ancho = grosorCalzada();
+
       const banda = L.polyline(puntos, {
         color: destacado ? '#ffffff' : '#0066cc',
-        weight: destacado ? 9 : 5,
+        weight: destacado ? ancho * 1.25 : ancho,
         opacity: destacado ? 1 : opacidad,
-        lineCap: 'round',
+        lineCap: 'butt',
+        lineJoin: 'round',
         className: destacado ? 'chx-banda destacada' : 'chx-banda'
       });
 
@@ -448,7 +489,7 @@
         zIndexOffset: destacado ? 1000 : 0
       });
 
-      const popup = textoPopup(f, pos, est);
+      const popup = textoPopup(f, pos, est, cabeza);
       banda.bindPopup(popup);
       marca.bindPopup(popup);
 
@@ -461,7 +502,7 @@
     });
   }
 
-  function textoPopup(f, pos, est) {
+  function textoPopup(f, pos, est, cabeza) {
     /* El horario solo se publica si el rol cargado es el definitivo. Una
        hora de salida equivocada hace que la gente se pierda a su
        fraternidad, así que ante la duda no se muestra. */
@@ -470,21 +511,33 @@
       : `Orden de ingreso ${f.orden_ingreso}`;
 
     const punto = U.esc(pos.checkpoint_nombre || 'un punto de control');
-    const sig = geo.siguiente(pos.checkpoint_id);
 
-    let linea;
-    if (est.enElUltimoTramo) {
-      linea = `Pasó por <strong>${punto}</strong>, el último punto del recorrido`;
-    } else if (est.frescura === 'viejo') {
-      linea = `Debería estar llegando a <strong>${U.esc(sig.nombre)}</strong>.<br>` +
-              `Puede estar en un descanso.`;
-    } else {
-      linea = `Va entre <strong>${punto}</strong> y <strong>${U.esc(sig.nombre)}</strong>`;
+    /* Se encabeza con la calle, no con el punto de control: un checkpoint
+       es una referencia interna nuestra, una avenida es algo que la gente
+       ubica sin que se lo expliquen. */
+    const calle = geo.calleEn ? geo.calleEn(cabeza) : null;
+    const recorridos = Math.round(cabeza);
+    const restantes = Math.max(0, Math.round(geo.total - cabeza));
+    const pct = Math.round(cabeza / geo.total * 100);
+
+    let dondeVa = calle
+      ? `Va por <strong>${U.esc(calle)}</strong>`
+      : `Pasó por <strong>${punto}</strong>`;
+
+    if (est.frescura === 'viejo' && !est.enElUltimoTramo) {
+      dondeVa += `<br><span class="chx-popup-aviso">Puede estar en un descanso</span>`;
     }
 
     return `<b>${U.esc(f.nombre)}</b>` +
       `<div class="chx-popup-meta">` +
-        `${linea}<br>` +
+        `${dondeVa}` +
+        `<div class="chx-popup-avance">` +
+          `<span><strong>${recorridos.toLocaleString('es-BO')} m</strong> recorridos</span>` +
+          `<span>faltan ${restantes.toLocaleString('es-BO')} m</span>` +
+        `</div>` +
+        `<div class="chx-popup-barra" aria-hidden="true">` +
+          `<span style="width:${pct}%"></span>` +
+        `</div>` +
         `Confirmada en ${punto} <strong>${U.esc(U.haceCuanto(pos.timestamp))}</strong><br>` +
         pie +
       `</div>`;

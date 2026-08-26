@@ -50,6 +50,39 @@
   ];
 
   /* ============================================================
+     1b. Calles y avenidas del recorrido
+     ------------------------------------------------------------
+     Cada tramo del trazado, en metros desde la salida, con el nombre de la
+     vía por la que pasa. Es lo que permite que la ficha diga "va por la
+     Avenida Universitaria" en vez de "entre el Punto 3 y el Punto 4":
+     un punto de control es una referencia interna nuestra, una avenida es
+     algo que la gente ubica sin explicación.
+
+     ⚠️ VERIFICAR ANTES DEL EVENTO.
+     Los nueve nombres son los que pasó el cliente. Los cortes salen de la
+     geometría: el trazado tiene exactamente nueve tramos rectos separados
+     por giros fuertes, y los nombres se asignaron en el orden en que
+     fueron listados, asumiendo que ese es el orden del recorrido.
+
+     La cantidad coincide y el orden es plausible, pero yo no verifiqué
+     sobre el terreno qué nombre corresponde a cada tramo. Poner una calle
+     equivocada en la ficha es peor que no poner ninguna, porque alguien
+     puede salir a buscar a su fraternidad a la avenida que no es.
+     Contrastar cada rango con el mapa y corregir acá.
+     ============================================================ */
+  const CALLES = [
+    { desde:    0, hasta:  290, nombre: 'Arco Mejillones' },
+    { desde:  290, hasta:  516, nombre: 'Calle Mejillones' },
+    { desde:  516, hasta:  953, nombre: 'Calle H. Vásquez' },
+    { desde:  953, hasta: 1233, nombre: 'Avenida Tinkuy' },
+    { desde: 1233, hasta: 1736, nombre: 'Avenida Universitaria' },
+    { desde: 1736, hasta: 2309, nombre: 'Avenida Sevilla' },
+    { desde: 2309, hasta: 2791, nombre: 'Avenida Litoral' },
+    { desde: 2791, hasta: 3372, nombre: 'Avenida Cívica' },
+    { desde: 3372, hasta: 9999, nombre: 'Plaza San Bernardo' }
+  ];
+
+  /* ============================================================
      2. Checkpoints — UBICACIÓN REAL
      ------------------------------------------------------------
      7 puntos marcados por el cliente sobre el mapa. Los siete caen
@@ -462,6 +495,7 @@
 
   window.CHUTILLOS_MOCK = {
     RECORRIDO,
+    CALLES,
     checkpoints,
     fraternidades,
     ultimasPosiciones,
