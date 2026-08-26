@@ -19,13 +19,20 @@
   const CFG = window.CHUTILLOS_CONFIG;
   const U = window.CHUTILLOS_UTIL;
 
-  let modo = 'recorrido';        /* 'recorrido' | 'checkpoints' */
+  let modo = 'recorrido';        /* 'recorrido' | 'checkpoints' | 'calles' */
   let formatoSalida = 'js';      /* 'js' | 'sql' */
 
   let puntos = [];               /* [{lat, lng}] del trazado */
   let checkpoints = [];          /* [{nombre, lat, lng}] */
 
-  let mapa, capaLinea, capaVertices, capaChk;
+  /* Calles: `cortes` son las distancias en metros donde termina una vía y
+     empieza la siguiente. Con N cortes hay N+1 tramos, así que
+     `nombresCalle` siempre tiene un elemento más que `cortes`. */
+  let cortes = [];
+  let nombresCalle = ['Sin nombre'];
+
+  let mapa, capaLinea, capaVertices, capaChk, capaCalles;
+  let geo = null;                /* geometría del trazado actual */
 
   const $ = id => document.getElementById(id);
 
@@ -48,20 +55,64 @@
     if (panel) panel.classList.add('chx-tiles');
 
     capaLinea = L.layerGroup().addTo(mapa);
+    capaCalles = L.layerGroup().addTo(mapa);
     capaVertices = L.layerGroup().addTo(mapa);
     capaChk = L.layerGroup().addTo(mapa);
 
     mapa.on('click', (e) => {
       if (modo === 'recorrido') {
         puntos.push({ lat: e.latlng.lat, lng: e.latlng.lng });
-      } else {
+      } else if (modo === 'checkpoints') {
         const nombre = ($('nombre-chk').value || '').trim() ||
                        `Punto ${checkpoints.length + 1}`;
         checkpoints.push({ nombre, lat: e.latlng.lat, lng: e.latlng.lng });
         $('nombre-chk').value = '';
+      } else {
+        agregarCorte(e.latlng);
       }
       redibujar();
     });
+  }
+
+  /* ============================================================
+     Cortes entre calles
+     ------------------------------------------------------------
+     El clic no cae exactamente sobre la línea, así que se proyecta al
+     punto más cercano del trazado: lo que importa es a qué altura del
+     recorrido está el cruce, no dónde apoyó el dedo.
+     ============================================================ */
+  function agregarCorte(latlng) {
+    if (!geo) return;
+
+    const { s } = geo.proyectar(latlng.lat, latlng.lng);
+
+    /* Muy cerca de un corte que ya existe: se ignora, para que un doble
+       clic no genere un tramo de dos metros. */
+    if (cortes.some(c => Math.abs(c - s) < 25)) return;
+    if (s < 25 || s > geo.total - 25) return;
+
+    let i = cortes.findIndex(c => c > s);
+    if (i === -1) i = cortes.length;
+
+    cortes.splice(i, 0, s);
+    /* El tramo que se parte conserva su nombre; el nuevo nace vacío. */
+    nombresCalle.splice(i + 1, 0, '');
+  }
+
+  function quitarCorte(i) {
+    cortes.splice(i, 1);
+    nombresCalle.splice(i + 1, 1);
+  }
+
+  /** Tramos actuales: [{desde, hasta, nombre}] */
+  function tramosDeCalle() {
+    if (!geo) return [];
+    const limites = [0, ...cortes, geo.total];
+    return nombresCalle.map((nombre, i) => ({
+      desde: limites[i],
+      hasta: limites[i + 1],
+      nombre
+    })).filter(t => t.hasta > t.desde);
   }
 
   /* ============================================================
@@ -69,16 +120,71 @@
      ============================================================ */
   function redibujar() {
     capaLinea.clearLayers();
+    capaCalles.clearLayers();
     capaVertices.clearLayers();
     capaChk.clearLayers();
+
+    /* La geometría se recalcula porque el trazado puede haber cambiado */
+    geo = puntos.length > 1
+      ? window.CHUTILLOS_RECORRIDO.construir(
+          puntos.map(p => [p.lat, p.lng]), [])
+      : null;
 
     /* Trazado */
     if (puntos.length > 1) {
       L.polyline(puntos.map(p => [p.lat, p.lng]), {
         color: '#0066cc',
-        weight: 4,
-        opacity: 0.8
+        weight: modo === 'calles' ? 3 : 4,
+        opacity: modo === 'calles' ? 0.25 : 0.8
       }).addTo(capaLinea);
+    }
+
+    /* Tramos de calle, en colores alternos para que se distingan */
+    if (modo === 'calles' && geo) {
+      const PALETA = ['#0066cc', '#8ab4f8', '#27c93f', '#d9a441', '#c77dff'];
+      tramosDeCalle().forEach((t, i) => {
+        /* interactive:false a propósito: si el tramo captura el clic, no se
+           puede marcar un corte encima de él, que es justo lo que hay que
+           hacer. La referencia de color y nombre vive en el panel. */
+        L.polyline(geo.tramo(t.desde, t.hasta), {
+          color: PALETA[i % PALETA.length],
+          weight: 8,
+          opacity: 0.85,
+          lineCap: 'butt',
+          interactive: false
+        }).addTo(capaCalles);
+      });
+
+      /* Marcas de corte, arrastrables para ajustar */
+      cortes.forEach((s, i) => {
+        const ll = geo.puntoEn(s);
+        const m = L.marker(ll, {
+          draggable: true,
+          icon: L.divIcon({
+            className: '',
+            html: '<div class="ed-corte"></div>',
+            iconSize: [14, 14],
+            iconAnchor: [7, 7]
+          })
+        });
+        m.bindTooltip(`Corte a los ${Math.round(s)} m`, { direction: 'top', offset: [0, -10] });
+        m.on('dragend', (e) => {
+          const p = geo.proyectar(e.target.getLatLng().lat, e.target.getLatLng().lng);
+          cortes[i] = p.s;
+          /* Reordenar sin perder la correspondencia con los nombres */
+          const juntos = cortes.map((c, k) => ({ c, n: nombresCalle[k + 1] }))
+            .sort((a, b) => a.c - b.c);
+          cortes = juntos.map(x => x.c);
+          nombresCalle = [nombresCalle[0], ...juntos.map(x => x.n)];
+          redibujar();
+        });
+        m.on('contextmenu', (ev) => {
+          L.DomEvent.stop(ev);
+          quitarCorte(i);
+          redibujar();
+        });
+        m.addTo(capaCalles);
+      });
     }
 
     puntos.forEach((p, i) => {
@@ -162,10 +268,18 @@
       $('d-puntos').textContent = String(puntos.length);
       $('fila-distancia').hidden = false;
       $('d-distancia').textContent = formatoDistancia(longitudTrazado());
-    } else {
+    } else if (modo === 'checkpoints') {
       $('lbl-puntos').textContent = 'Checkpoints';
       $('d-puntos').textContent = String(checkpoints.length);
       $('fila-distancia').hidden = true;
+    } else {
+      const t = tramosDeCalle();
+      $('lbl-puntos').textContent = 'Tramos';
+      $('d-puntos').textContent = String(t.length);
+      $('fila-distancia').hidden = false;
+      $('d-distancia').textContent = t.filter(x => x.nombre.trim()).length +
+                                     ' con nombre';
+      pintarListaCalles(t);
     }
 
     $('lista-chk').innerHTML = checkpoints.map((c, i) => `
@@ -180,6 +294,42 @@
         </button>
       </li>`).join('');
   }
+
+  /* Un input por tramo. Se reconstruye la lista entera en cada redibujo,
+     así que hay que devolverle el foco y el cursor al campo que se estaba
+     escribiendo o se pierde la escritura a mitad de palabra. */
+  function pintarListaCalles(tramos) {
+    const activo = document.activeElement;
+    const idxActivo = activo && activo.dataset && activo.dataset.calle !== undefined
+      ? Number(activo.dataset.calle) : null;
+    const cursor = idxActivo !== null ? activo.selectionStart : null;
+
+    $('lista-calles').innerHTML = tramos.map((t, i) => `
+      <li>
+        <span class="ed-color" style="background:${
+          ['#0066cc', '#8ab4f8', '#27c93f', '#d9a441', '#c77dff'][i % 5]
+        }"></span>
+        <span class="ed-rango">${Math.round(t.desde)}–${Math.round(t.hasta)} m</span>
+        <input type="text" data-calle="${i}" value="${U.esc(t.nombre)}"
+               placeholder="Nombre de la vía" aria-label="Nombre del tramo ${i + 1}">
+      </li>`).join('');
+
+    if (idxActivo !== null) {
+      const nuevo = $('lista-calles').querySelector(`[data-calle="${idxActivo}"]`);
+      if (nuevo) {
+        nuevo.focus();
+        if (cursor !== null) nuevo.setSelectionRange(cursor, cursor);
+      }
+    }
+  }
+
+  $('lista-calles').addEventListener('input', (e) => {
+    const inp = e.target.closest('[data-calle]');
+    if (!inp) return;
+    nombresCalle[Number(inp.dataset.calle)] = inp.value;
+    /* Solo se refresca la salida: redibujar entero robaría el foco */
+    actualizarSalida();
+  });
 
   function longitudTrazado() {
     let total = 0;
@@ -202,9 +352,41 @@
      Salida
      ============================================================ */
   function actualizarSalida() {
-    $('salida').value = modo === 'recorrido'
-      ? (formatoSalida === 'js' ? recorridoComoJS() : recorridoComoSQL())
-      : (formatoSalida === 'js' ? checkpointsComoJS() : checkpointsComoSQL());
+    if (modo === 'recorrido') {
+      $('salida').value = formatoSalida === 'js' ? recorridoComoJS() : recorridoComoSQL();
+    } else if (modo === 'checkpoints') {
+      $('salida').value = formatoSalida === 'js' ? checkpointsComoJS() : checkpointsComoSQL();
+    } else {
+      $('salida').value = formatoSalida === 'js' ? callesComoJS() : callesComoSQL();
+    }
+  }
+
+  function callesComoJS() {
+    const t = tramosDeCalle();
+    if (!t.length) return '// Marcá los cortes entre calles sobre el trazado';
+    const ancho = Math.max(...t.map(x => (x.nombre || '').length)) + 2;
+    return 'const CALLES = [\n' +
+      t.map((x, i) => {
+        const nom = JSON.stringify(x.nombre || 'Sin nombre').padEnd(ancho);
+        const fin = i === t.length - 1
+          ? '99999'.padStart(5)
+          : String(Math.round(x.hasta)).padStart(5);
+        return `    { desde: ${String(Math.round(x.desde)).padStart(5)}, ` +
+               `hasta: ${fin}, nombre: ${nom}}`;
+      }).join(',\n') +
+      '\n  ];';
+  }
+
+  function callesComoSQL() {
+    const t = tramosDeCalle();
+    if (!t.length) return '-- Marcá los cortes entre calles sobre el trazado';
+    return 'delete from calles;\n\n' +
+      'insert into calles (desde, hasta, nombre) values\n' +
+      t.map((x, i) =>
+        `  (${String(Math.round(x.desde)).padStart(5)}, ` +
+        `${(i === t.length - 1 ? '99999' : String(Math.round(x.hasta))).padStart(5)}, ` +
+        `${sqlTexto(x.nombre || 'Sin nombre')})`
+      ).join(',\n') + ';';
   }
 
   /* 6 decimales ≈ 11 cm de resolución. Más precisión sería ruido: el GPS
@@ -317,15 +499,19 @@
      ============================================================ */
   $('btn-deshacer').addEventListener('click', () => {
     if (modo === 'recorrido') puntos.pop();
-    else checkpoints.pop();
+    else if (modo === 'checkpoints') checkpoints.pop();
+    else if (cortes.length) quitarCorte(cortes.length - 1);
     redibujar();
   });
 
   $('btn-limpiar').addEventListener('click', () => {
-    const qué = modo === 'recorrido' ? 'el trazado' : 'los puntos de control';
+    const qué = modo === 'recorrido' ? 'el trazado'
+              : modo === 'checkpoints' ? 'los puntos de control'
+              : 'los cortes entre calles';
     if (!confirm(`¿Borrar ${qué}? No se puede deshacer.`)) return;
     if (modo === 'recorrido') puntos = [];
-    else checkpoints = [];
+    else if (modo === 'checkpoints') checkpoints = [];
+    else { cortes = []; nombresCalle = ['Sin nombre']; }
     redibujar();
   });
 
@@ -354,11 +540,20 @@
       document.querySelectorAll('[data-modo]').forEach(b =>
         b.setAttribute('aria-pressed', String(b === btn)));
       $('panel-chk').hidden = modo !== 'checkpoints';
+      $('panel-calles').hidden = modo !== 'calles';
+
       $('estado-texto').textContent =
-        modo === 'recorrido' ? 'Modo recorrido' : 'Modo checkpoints';
-      $('ayuda-mapa').textContent = modo === 'recorrido'
-        ? 'Hacé clic sobre las avenidas para ir agregando puntos. Arrastrá un punto para corregirlo. Clic derecho sobre un punto lo borra.'
-        : 'Escribí el nombre y hacé clic donde va el punto de control. Arrastrá para reubicar, clic derecho para borrar.';
+        modo === 'recorrido' ? 'Modo recorrido'
+        : modo === 'checkpoints' ? 'Modo checkpoints'
+        : 'Modo calles';
+
+      $('ayuda-mapa').textContent =
+        modo === 'recorrido'
+          ? 'Hacé clic sobre las avenidas para ir agregando puntos. Arrastrá un punto para corregirlo. Clic derecho sobre un punto lo borra.'
+        : modo === 'checkpoints'
+          ? 'Escribí el nombre y hacé clic donde va el punto de control. Arrastrá para reubicar, clic derecho para borrar.'
+          : 'Hacé clic sobre el trazado donde termina una calle y empieza la siguiente. Arrastrá un corte para ajustarlo, clic derecho para quitarlo.';
+
       redibujar();
     });
   });
@@ -386,10 +581,25 @@
      ============================================================ */
   iniciarMapa();
 
-  /* Se precarga el trazado de ejemplo para tener de dónde partir; el
-     primer clic en Limpiar lo borra. */
-  if (window.CHUTILLOS_MOCK && window.CHUTILLOS_MOCK.RECORRIDO) {
-    puntos = window.CHUTILLOS_MOCK.RECORRIDO.map(p => ({ lat: p[0], lng: p[1] }));
+  /* Se precarga lo que ya está cargado en el sistema, para partir de ahí y
+     corregir en vez de empezar de cero. */
+  if (window.CHUTILLOS_MOCK) {
+    const M = window.CHUTILLOS_MOCK;
+    if (M.RECORRIDO) {
+      puntos = M.RECORRIDO.map(p => ({ lat: p[0], lng: p[1] }));
+    }
+    if (M.checkpoints) {
+      checkpoints = M.checkpoints.map(c => ({ nombre: c.nombre, lat: c.lat, lng: c.lng }));
+    }
+    /* Las calles vienen con límites que pueden ser id de checkpoint; se
+       resuelven contra la geometría antes de cargarlas. */
+    if (M.CALLES && M.CALLES.length) {
+      const g = window.CHUTILLOS_RECORRIDO.construir(M.RECORRIDO, M.checkpoints, M.CALLES);
+      if (g && g.calles.length) {
+        nombresCalle = g.calles.map(c => c.nombre);
+        cortes = g.calles.slice(0, -1).map(c => c.hasta);
+      }
+    }
   }
   redibujar();
   if (puntos.length) {
