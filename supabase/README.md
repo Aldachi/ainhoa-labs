@@ -49,7 +49,8 @@ Estado actual del padrón:
 | Orden y horarios | ⚠️ De la Pre-Entrada (22-23 ago), no del 28-30 |
 | Día 30 (ancestrales) | ❌ Sin rol publicado |
 | Ubicación de los 7 checkpoints | ✅ Real — [`seed-checkpoints.sql`](seed-checkpoints.sql) |
-| Nombres de los checkpoints | ⚠️ Provisionales ("Punto 1"…) |
+| Nombres de los checkpoints | ✅ Definitivos — "Punto 1" a "Punto 7" |
+| Calles y avenidas | ✅ Reales — [`seed-calles.sql`](seed-calles.sql) |
 | Portadores GPS | ⛔ No se usan — `GPS_HABILITADO: false` |
 
 Mientras `ROL_OFICIAL` siga en `false` dentro de `config.js`, ni la página

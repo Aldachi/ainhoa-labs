@@ -310,7 +310,8 @@
      ============================================================ */
   function calcularCadena() {
     const cadena = new Map();
-    if (!geo) return cadena;
+    const finalizadas = new Set();
+    if (!geo) return { cadena, finalizadas };
 
     const LARGO = CFG.LARGO_CUERPO_M;
     let colaAnterior = null;
@@ -321,6 +322,15 @@
 
       const est = U.estimar(pos, geo);
       if (!est) return;
+
+      /* Las que llegaron a la meta salen de la fila: ya no están en la
+         calle, así que no se dibujan en el mapa ni le ponen tope a la que
+         viene atrás — esa puede avanzar al tramo que quedó libre. En la
+         lista sí siguen, marcadas como finalizadas. */
+      if (geo.esFinal && geo.esFinal(est.sRapido)) {
+        finalizadas.add(f.id);
+        return;
+      }
 
       let cabeza = est.sRapido;
 
@@ -342,7 +352,7 @@
       colaAnterior = cola;
     });
 
-    return cadena;
+    return { cadena, finalizadas };
   }
 
   function pintarLista() {
@@ -368,7 +378,7 @@
 
     /* Misma cadena que usa el mapa, para que la lista y el mapa no digan
        cosas distintas de la misma fraternidad. */
-    const cadenaActual = calcularCadena();
+    const { cadena: cadenaActual, finalizadas } = calcularCadena();
 
     /* Reconstrucción completa: con ~115 filas es instantáneo y evita
        toda una clase de bugs de sincronización de estado. */
@@ -377,7 +387,7 @@
     items.forEach(f => {
       const pos = posiciones.get(f.id);
       const est = pos && geo ? U.estimar(pos, geo) : null;
-      const fres = est ? est.frescura : 'sin-dato';
+      let fres = est ? est.frescura : 'sin-dato';
 
       const li = document.createElement('li');
       const btn = document.createElement('button');
@@ -395,15 +405,15 @@
          es haber terminado. */
       const eslabon = cadenaActual.get(f.id);
       let detalle;
-      if (!pos) {
+      if (finalizadas.has(f.id)) {
+        detalle = `Finalizó el recorrido · ${Math.round(geo.total).toLocaleString('es-BO')} m`;
+      } else if (!pos) {
         const largada = geo && geo.calleDeSalida ? geo.calleDeSalida() : null;
         detalle = largada
           ? `En ${U.esc(largada)} · esperando la salida`
           : 'Esperando la salida';
       } else if (!eslabon) {
         detalle = `Vista en ${U.esc(pos.checkpoint_nombre || 'un punto de control')}`;
-      } else if (geo.esFinal && geo.esFinal(eslabon.cabeza)) {
-        detalle = `Finalizó el recorrido · ${Math.round(geo.total).toLocaleString('es-BO')} m`;
       } else {
         const calle = geo.calleEn ? geo.calleEn(eslabon.cabeza) : null;
         const metros = Math.round(eslabon.cabeza).toLocaleString('es-BO');
@@ -412,7 +422,13 @@
           : `${metros} m recorridos`;
       }
 
-      const cuando = pos ? U.haceCuanto(pos.timestamp) : '—';
+      /* La que terminó no necesita reloj: "hace 45 min" sobre fondo ámbar
+         se lee como un dato que se está poniendo viejo, cuando en realidad
+         ya no va a cambiar nunca más. */
+      const cuando = finalizadas.has(f.id)
+        ? 'Llegó'
+        : (pos ? U.haceCuanto(pos.timestamp) : '—');
+      if (finalizadas.has(f.id)) fres = 'final';
 
       btn.innerHTML =
         `<span class="chx-orden">${String(f.orden_ingreso).padStart(2, '0')}</span>` +
@@ -455,12 +471,14 @@
     capaMarcadores.clearLayers();
     bandas.clear();
 
-    const cadena = calcularCadena();
+    const { cadena } = calcularCadena();
 
     visibles().forEach(f => {
       const pos = posiciones.get(f.id);
       if (!pos) return;
 
+      /* Sin eslabón es que todavía no salió o que ya terminó: en ninguno de
+         los dos casos está en la calle, así que no se dibuja. */
       const eslabon = cadena.get(f.id);
       if (!eslabon) return;
 

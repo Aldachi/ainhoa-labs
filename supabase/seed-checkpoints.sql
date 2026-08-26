@@ -9,24 +9,31 @@
 -- Reparto a lo largo de los 3518 m del recorrido:
 --
 --   Punto 1     43 m del inicio   — confirma la salida
---   Punto 2    503 m                 tramo previo: 460 m   ~16 min
---   Punto 3    949 m                 tramo previo: 446 m   ~15 min
---   Punto 4   1741 m                 tramo previo: 792 m   ~27 min  <-- el mas largo
---   Punto 5   2306 m                 tramo previo: 565 m   ~19 min
---   Punto 6   2788 m                 tramo previo: 482 m   ~17 min
---   Punto 7   3448 m                 tramo previo: 661 m   ~23 min
+--   Punto 2    503 m                 tramo previo: 460 m   ~35 min
+--   Punto 3    949 m                 tramo previo: 446 m   ~33 min
+--   Punto 4   1741 m                 tramo previo: 792 m   ~59 min  <-- el mas largo
+--   Punto 5   2306 m                 tramo previo: 565 m   ~42 min
+--   Punto 6   2788 m                 tramo previo: 482 m   ~36 min
+--   Punto 7   3448 m                 tramo previo: 661 m   ~50 min
 --                                    hasta el final:  70 m
 --
--- (minutos estimados a 1.75 km/h, paso de desfile con pausas)
+-- (minutos a 0.80 km/h, la velocidad real del desfile con sus descansos:
+--  las salidas van de 08:00 a 19:25 y la ultima termina cerca de la
+--  medianoche)
 --
--- ⚠️ El tramo Punto 3 -> Punto 4 supera el umbral de dato viejo (25 min):
---    las fraternidades que esten ahi se van a ver en gris aunque todo
---    funcione bien. Para emparejarlo, correr el Punto 3 unos 230 m hacia
---    adelante, a lat -19.586681 / lng -65.759857.
+-- El tramo Punto 3 -> Punto 4 es casi el doble que sus vecinos: 792 m,
+-- casi una hora sin actualizar. El sistema ya lo contempla -mide la
+-- antiguedad del dato contra lo que tarda cada tramo, no contra un numero
+-- global- asi que no se ve como alerta falsa. Aun asi es el tramo con
+-- menos cobertura: si aparece gente de sobra, ahi conviene el punto extra.
+-- Para emparejarlo sin sumar gente, correr el Punto 3 unos 230 m hacia
+-- adelante, a lat -19.586681 / lng -65.759857.
 --
--- ⚠️ Los NOMBRES son provisionales. La pagina publica los muestra como
---    "Vista en ...", asi que conviene reemplazar "Punto 1" por una
---    referencia que la gente reconozca parada en la calle.
+-- Los nombres "Punto 1" a "Punto 7" son los DEFINITIVOS, por decision del
+-- cliente. Funciona porque el publico ya no los necesita para ubicarse:
+-- la ficha encabeza con la calle -"Va por Avenida Tinkuy"- y el punto de
+-- control aparece solo en la linea de "Confirmada en ...", que es
+-- trazabilidad, no orientacion.
 --
 -- Ejecutar despues de schema.sql y seed-recorrido.sql.
 -- ============================================

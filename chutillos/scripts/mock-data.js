@@ -106,9 +106,11 @@
      todo funcione. Se puede emparejar corriendo el Punto 3 unos 230 m
      hacia adelante, a lat -19.586681 / lng -65.759857.
 
-     ⚠️ Los NOMBRES siguen siendo provisionales. La página pública los
-     muestra como "Vista en …", así que conviene reemplazar "Punto 1" por
-     una referencia que la gente reconozca parada en la calle.
+     Los nombres "Punto 1" a "Punto 7" son los definitivos, por decisión
+     del cliente. Funciona porque el público ya no los necesita para
+     ubicarse: la ficha encabeza con la calle —"Va por Avenida Tinkuy"— y
+     el punto de control aparece solo en la línea de "Confirmada en …",
+     que es trazabilidad, no orientación.
      ============================================================ */
   const CHECKPOINTS_BASE = [
     ['chk-01', 'Punto 1', 1, -19.591421, -65.757720],

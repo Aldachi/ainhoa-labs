@@ -476,6 +476,13 @@
 .chx-badge[data-frescura="viejo"]  { border-color: var(--color-border); color: var(--color-muted); }
 .chx-badge[data-frescura="sin-dato"] { border-style: dashed; }
 
+/* Llegó a la meta: no es un dato fresco ni viejo, es un dato cerrado. */
+.chx-badge[data-frescura="final"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #fff;
+}
+
 .chx-vacio {
   padding: 3rem 1rem;
   text-align: center;
