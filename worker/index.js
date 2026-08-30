@@ -81,9 +81,44 @@ export default {
     }
 
     /* Cualquier otra ruta la resuelven los archivos estáticos */
-    return env.ASSETS.fetch(request);
+    return conCache(url, await env.ASSETS.fetch(request));
   }
 };
+
+/* ============================================================
+   Caché de los archivos estáticos
+   ------------------------------------------------------------
+   Las páginas piden sus scripts como `publico.js?v=26`. Ese esquema solo
+   funciona si el HTML que trae ese número llega fresco: si el navegador
+   se queda con un HTML viejo, sigue pidiendo `?v=21` y nunca ve un cambio,
+   por más que se publique. Una recarga normal no lo arregla y termina
+   pareciendo que el despliegue no salió.
+
+   Así que van al revés de lo que uno esperaría:
+
+     HTML            — sin caché. Es chico y es lo que decide todo lo demás.
+     Assets con ?v=  — caché para siempre. El número cambia con cada
+                       edición, así que la URL vieja ya no se pide.
+     El resto        — una hora, revalidando.
+   ============================================================ */
+function conCache(url, respuesta) {
+  const ruta = url.pathname;
+  const esHtml = ruta.endsWith('/') || ruta.endsWith('.html') || !ruta.includes('.');
+
+  let valor;
+  if (esHtml) {
+    valor = 'no-store, must-revalidate';
+  } else if (url.searchParams.has('v')) {
+    valor = 'public, max-age=31536000, immutable';
+  } else {
+    valor = 'public, max-age=3600';
+  }
+
+  /* La respuesta de ASSETS trae cabeceras inmutables: hay que clonarla. */
+  const r = new Response(respuesta.body, respuesta);
+  r.headers.set('Cache-Control', valor);
+  return r;
+}
 
 /* ============================================================
    Enrutado del panel
