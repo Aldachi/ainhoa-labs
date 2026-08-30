@@ -168,13 +168,6 @@
      Carga inicial
      ============================================================ */
   async function iniciar() {
-    /* Sin base de datos conectada las posiciones son inventadas, pero la
-       pagina se ve igual que con datos reales: mismo mapa, mismas bandas,
-       misma insignia. Durante el evento eso se lee como la posicion real
-       de una fraternidad, asi que se avisa antes que nada. */
-    const $simulacion = document.getElementById('aviso-simulacion');
-    if ($simulacion) $simulacion.hidden = !CFG.USAR_MOCK;
-
     pintarDias();
 
     try {
@@ -245,10 +238,7 @@
       const filas = await Datos.getUltimasPosiciones();
       posiciones = new Map(filas.map(p => [p.fraternidad_id, p]));
       fallosSeguidos = 0;
-      /* Con datos de ejemplo la insignia no puede decir 'En vivo': la
-         pagina se ve exactamente igual que con datos reales, y durante el
-         evento alguien la leeria como la posicion de su fraternidad. */
-      pintarEstado('vivo', CFG.USAR_MOCK ? 'Demostración' : 'En vivo');
+      pintarEstado('vivo', 'En vivo');
       pintarLista();
       pintarMarcadores();
     } catch (err) {
@@ -382,13 +372,30 @@
         : `La lista de ${d ? d.nombre.toLowerCase() : 'este día'} todavía no fue publicada por la AFFAP.`;
     }
 
-    const conDato = items.filter(f => posiciones.has(f.id)).length;
-    $resumen.innerHTML =
-      `<b>${items.length}</b> fraternidades &middot; <b>${conDato}</b> con reporte reciente`;
-
     /* Misma cadena que usa el mapa, para que la lista y el mapa no digan
        cosas distintas de la misma fraternidad. */
     const { cadena: cadenaActual, finalizadas } = calcularCadena();
+
+    /* El resumen dice en qué estado está el día, no cuántos reportes hay.
+       "60 con reporte reciente" en un día que ya terminó es engañoso: el
+       dato existe pero no tiene nada de reciente. */
+    const enCalle = items.filter(f => cadenaActual.has(f.id)).length;
+    const llegaron = items.filter(f => finalizadas.has(f.id)).length;
+
+    let detalle;
+    if (items.length > 0 && llegaron === items.length) {
+      detalle = 'todas finalizaron el recorrido';
+    } else if (enCalle > 0 || llegaron > 0) {
+      const partes = [];
+      if (enCalle > 0) partes.push(`<b>${enCalle}</b> en el recorrido`);
+      if (llegaron > 0) partes.push(`<b>${llegaron}</b> ya llegaron`);
+      detalle = partes.join(' &middot; ');
+    } else {
+      detalle = 'todavía no salió ninguna';
+    }
+
+    $resumen.innerHTML =
+      `<b>${items.length}</b> fraternidades &middot; ${detalle}`;
 
     /* Reconstrucción completa: con ~115 filas es instantáneo y evita
        toda una clase de bugs de sincronización de estado. */

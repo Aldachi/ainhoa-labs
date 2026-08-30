@@ -472,29 +472,56 @@
   /* ============================================================
      4. Simulación de actividad en vivo
      ------------------------------------------------------------
-     Solo para poder probar la interfaz sin backend: mueve a las
-     fraternidades por el recorrido según el tiempo transcurrido desde que
-     cargó la página. Al pasar a Supabase, la capa de datos deja de llamar
-     a estas funciones y no queda rastro de esto.
+     Solo para poder probar la interfaz sin backend: coloca a cada
+     fraternidad donde le tocaría estar según el rol y el reloj. Al pasar a
+     Supabase, la capa de datos deja de llamar a estas funciones y no queda
+     rastro de esto.
      ============================================================ */
 
   const CFG = window.CHUTILLOS_CONFIG;
-  const T0 = Date.now();
 
-  /* Reloj virtual: la vista arranca con el evento ya empezado, para no
-     tener que esperar horas a que haya algo en el mapa. Desde ahí el
-     tiempo corre normal. */
-  const MINUTO_INICIAL = 265;          // ~12:25 de la jornada
-  const HORA_ARRANQUE = 8 * 60;        // la primera sale 08:10
+  /* Va contra el reloj real del dispositivo, no contra un desfase fijo
+     desde que cargó la página. Es lo que hace que a las 11 de la mañana se
+     vea lo que pasa a las 11, y que la vista siga siendo correcta sola a
+     lo largo del día sin tocar nada. */
+  const HORA_ARRANQUE = 8 * 60;        // origen comun de los tres dias
+
+  /* Día del evento que se está corriendo, según la fecha del dispositivo.
+     Antes del 28 se asume el 28; después del 30, el 30. */
+  const DIA_HOY = (() => {
+    const h = new Date();
+    if (h.getFullYear() === 2026 && h.getMonth() === 7) {
+      const d = h.getDate();
+      if (d < 28) return 28;
+      if (d <= 30) return d;
+    }
+    return 30;
+  })();
+
+  /* El rol siempre sale con atraso. El domingo 30 la primera estaba
+     programada 10:00 y salió cerca de las 10:40, así que se corre todo con
+     ese atraso de arranque; encima se le suma el que se va acumulando a lo
+     largo del día, que crece con el orden de ingreso.
+
+     Si el desfile va más adelantado o más atrasado de lo que muestra el
+     mapa, este es el número que hay que mover. */
+  const ATRASO_ARRANQUE_MIN = 40;
 
   function minutoDeEvento() {
-    return MINUTO_INICIAL + (Date.now() - T0) / 60000;
+    const h = new Date();
+    return h.getHours() * 60 + h.getMinutes() + h.getSeconds() / 60 - HORA_ARRANQUE;
   }
 
-  /* Fecha real que corresponde a un minuto del evento, para que los
-     "hace 20 min" de la interfaz den valores creíbles. */
-  function fechaDeMinuto(m) {
-    return new Date(Date.now() - (minutoDeEvento() - m) * 60000);
+  /* Fecha real que corresponde a un minuto del rol de un día dado.
+
+     El día importa: un reporte del 28 tiene que caer el 28. Si se calculara
+     todo sobre la fecha de hoy, el paso de una fraternidad del viernes por
+     el último punto se leería como "dentro de tres horas". */
+  function fechaDeMinutoEnDia(dia, m) {
+    const f = new Date();
+    f.setMonth(7, dia);
+    f.setHours(0, 0, 0, 0);
+    return new Date(f.getTime() + (HORA_ARRANQUE + m) * 60000);
   }
 
   function horaAMinutos(hhmm) {
@@ -520,13 +547,13 @@
     return t;
   })();
 
-  /* Minuto de evento en que sale cada una. El rol se va atrasando a lo
-     largo del día —algo que pasa siempre— así que se suma un retraso que
-     crece con el orden de ingreso. */
+  /* Minuto de evento en que sale cada una: la hora del rol más el atraso
+     de arranque, más el que se va acumulando a lo largo del día, que crece
+     con el orden de ingreso. */
   const salidaDe = new Map();
   fraternidades.forEach(f => {
     const programada = horaAMinutos(f.hora_estimada) - HORA_ARRANQUE;
-    const retraso = f.orden_ingreso * 0.6 + (hash(f.id) % 7);
+    const retraso = ATRASO_ARRANQUE_MIN + f.orden_ingreso * 0.6 + (hash(f.id) % 7);
     salidaDe.set(f.id, programada + retraso);
   });
 
@@ -539,6 +566,14 @@
       se vería igual que una que todavía no salió, que es justo lo
       contrario. */
   function avanceEnMetros(f) {
+    /* Un día que ya pasó está cerrado: todas llegaron a la Plaza San
+       Bernardo. No se recalcula contra el reloj de hoy porque daría
+       fraternidades del viernes caminando el domingo. */
+    if (f.dia < DIA_HOY) return LARGO_RUTA;
+
+    /* Y un día que todavía no llegó no tiene a nadie en la calle. */
+    if (f.dia > DIA_HOY) return null;
+
     const enRuta = minutoDeEvento() - salidaDe.get(f.id);
     if (enRuta <= 0) return null;
     return Math.min(enRuta * METROS_POR_MIN, LARGO_RUTA);
@@ -572,7 +607,7 @@
         lng: chk.lng,
         checkpoint_id: chk.id,
         checkpoint_nombre: chk.nombre,
-        timestamp: fechaDeMinuto(minutoDelPaso).toISOString()
+        timestamp: fechaDeMinutoEnDia(f.dia, minutoDelPaso).toISOString()
       });
     });
 
