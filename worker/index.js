@@ -9,7 +9,7 @@
    ---------------------------
    La anon key de Supabase viaja al navegador; es pública por diseño. Si el
    panel admin escribiera con esa clave, cualquiera que abriera las
-   herramientas de desarrollo podría borrar las 115 fraternidades en pleno
+   herramientas de desarrollo podría borrar las 163 fraternidades en pleno
    evento, por más PIN que hubiera en el formulario. Un PIN validado solo
    en el cliente no es una restricción de acceso, es una sugerencia.
 

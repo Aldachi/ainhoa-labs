@@ -153,7 +153,8 @@
       /* token_portador queda fuera del select a propósito: la vista pública
          no debe exponer los tokens. */
       return this._get(
-        'fraternidades?select=id,nombre,tipo,dia,modo_tracking,orden_ingreso,hora_estimada' +
+        'fraternidades?select=id,nombre,entidad,grupo,tipo,dia,modo_tracking,' +
+        'orden_ingreso,hora_estimada' +
         '&order=dia.asc,orden_ingreso.asc'
       );
     },

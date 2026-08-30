@@ -105,9 +105,9 @@
 
     /* ---- Evento ---------------------------------------------------------- */
     DIAS: [
-      { dia: 28, etiqueta: 'VIE 28', nombre: 'Entrada Autóctona' },
-      { dia: 29, etiqueta: 'SÁB 29', nombre: 'Entrada Folklórica' },
-      { dia: 30, etiqueta: 'DOM 30', nombre: 'Danzas Ancestrales' }
+      { dia: 28, etiqueta: 'VIE 28', nombre: 'Danzas Autóctonas' },
+      { dia: 29, etiqueta: 'SÁB 29', nombre: 'Danzas Folklóricas' },
+      { dia: 30, etiqueta: 'DOM 30', nombre: 'Entrada Autóctona' }
     ],
 
     /* Centro y zoom inicial del mapa (Potosí, zona baja) */
@@ -122,15 +122,15 @@
        ubicar. */
     RECORRIDO_OFICIAL: true,
 
-    /* Los nombres de las 115 fraternidades son los del Rol de Ingreso
-       oficial, pero el orden y los horarios cargados son los de la
-       Pre-Entrada (22 y 23 de agosto), no los de las entradas del 28-30.
+    /* Cargado el Rol de Ingreso oficial de la AFFAP para los tres días
+       (28 autóctonas, 29 folklóricas, 30 entrada autóctona), con su orden
+       y su hora de salida. Con esto en true la página pública ya publica
+       los horarios.
 
-       Mientras esto sea false, la página pública NO muestra el horario de
-       salida: publicar una hora sin confirmar es peor que no publicar
-       ninguna, porque la gente organiza su día con eso. Poner en true
-       recién cuando esté cargado el rol definitivo de la AFFAP. */
-    ROL_OFICIAL: false
+       Volver a false si vuelve a haber un día sin rol definitivo:
+       publicar una hora sin confirmar es peor que no publicar ninguna,
+       porque la gente organiza su día con eso. */
+    ROL_OFICIAL: true
   };
 
   /* Override por querystring, solo para pruebas */

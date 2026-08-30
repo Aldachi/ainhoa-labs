@@ -142,7 +142,7 @@
       <tr>
         <td>${U.esc(U.etiquetaDia(f.dia))}</td>
         <td>${f.orden_ingreso}</td>
-        <td>${U.esc(f.nombre)}</td>
+        <td>${U.esc(f.nombre)}${f.entidad ? `<br><small style="color:var(--color-muted)">${U.esc(f.entidad)}</small>` : ''}</td>
         <td>${U.esc(f.tipo)}</td>
         <td>${f.modo_tracking === 'gps'
               ? '<span style="color:var(--color-accent)">GPS</span>'

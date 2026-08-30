@@ -128,6 +128,15 @@
       return out.toLowerCase();
     },
 
+    /** Texto sobre el que busca el usuario: nombre + entidad.
+
+        La entidad tiene que entrar sí o sí. En el día 30 hay tres
+        "Sicuriada" y tres "Jula Jula", y quien busca a la suya la busca
+        por el municipio o la comunidad, no por la danza. */
+    buscable(f) {
+      return this.normalizar(f.entidad ? f.nombre + ' ' + f.entidad : f.nombre);
+    },
+
     /** Distancia en metros entre dos coordenadas (haversine) */
     distanciaM(lat1, lng1, lat2, lng2) {
       const R = 6371000;

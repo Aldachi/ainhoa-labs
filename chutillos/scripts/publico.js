@@ -282,7 +282,7 @@
   function visibles() {
     const q = U.normalizar(filtroTexto).trim();
     return delDia()
-      .filter(f => !q || U.normalizar(f.nombre).includes(q));
+      .filter(f => !q || U.buscable(f).includes(q));
   }
 
   /* ============================================================
@@ -434,6 +434,7 @@
         `<span class="chx-orden">${String(f.orden_ingreso).padStart(2, '0')}</span>` +
         `<span>` +
           `<span class="chx-nombre">${U.esc(f.nombre)}</span>` +
+          (f.entidad ? `<span class="chx-entidad">${U.esc(f.entidad)}</span>` : '') +
           `<span class="chx-sub">${detalle}</span>` +
         `</span>` +
         `<span class="chx-badge" data-frescura="${fres}">${U.esc(cuando)}</span>`;
@@ -513,7 +514,7 @@
           iconSize: destacado ? [16, 16] : [10, 10],
           iconAnchor: destacado ? [8, 8] : [5, 5]
         }),
-        title: f.nombre,
+        title: f.entidad ? f.nombre + " — " + f.entidad : f.nombre,
         zIndexOffset: destacado ? 1000 : 0
       });
 
@@ -579,6 +580,7 @@
         `<div class="chx-popup-barra" aria-hidden="true"><span style="width:${pct}%"></span></div>`;
 
     return `<b>${U.esc(f.nombre)}</b>` +
+      (f.entidad ? `<div class="chx-popup-entidad">${U.esc(f.entidad)}</div>` : '') +
       `<div class="chx-popup-meta">` +
         `${dondeVa}` +
         avance +

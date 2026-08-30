@@ -45,25 +45,32 @@ Estado actual del padrón:
 | Dato | Estado |
 |---|---|
 | Recorrido | ✅ Real — 18 puntos, 3.51 km |
-| Nombres de las 115 fraternidades | ✅ Reales — Rol de Ingreso AFFAP |
-| Orden y horarios | ⚠️ De la Pre-Entrada (22-23 ago), no del 28-30 |
-| Día 30 (ancestrales) | ❌ Sin rol publicado |
+| Rol de Ingreso día 28 · Danzas Autóctonas | ✅ Oficial — 60 ingresos, 6 grupos |
+| Rol de Ingreso día 29 · Danzas Folklóricas | ✅ Oficial — 56 ingresos, 5 grupos |
+| Rol de Ingreso día 30 · Entrada Autóctona | ✅ Oficial — 47 ingresos, 10:00 a 17:40 |
+| Las 163 fraternidades para cargar | ✅ [`seed-fraternidades.sql`](seed-fraternidades.sql) |
+| Orden y horarios | ✅ Oficiales — `ROL_OFICIAL: true` |
 | Ubicación de los 7 checkpoints | ✅ Real — [`seed-checkpoints.sql`](seed-checkpoints.sql) |
 | Nombres de los checkpoints | ✅ Definitivos — "Punto 1" a "Punto 7" |
 | Calles y avenidas | ✅ Reales — [`seed-calles.sql`](seed-calles.sql) |
 | Portadores GPS | ⛔ No se usan — `GPS_HABILITADO: false` |
 
-Mientras `ROL_OFICIAL` siga en `false` dentro de `config.js`, ni la página
-pública ni la de checkpoint muestran los horarios de salida: publicar una
-hora sin confirmar es peor que no publicar ninguna, porque la gente
-organiza su día con eso.
+El rol oficial de los tres días ya está cargado y `ROL_OFICIAL` está en
+`true`, así que la página pública y la del voluntario muestran la hora de
+salida. Si en otra edición vuelve a haber un día sin rol confirmado,
+ponerlo en `false`: publicar una hora sin confirmar es peor que no
+publicar ninguna, porque la gente organiza su día con eso.
 
-Cuando llegue el Rol de Ingreso definitivo del 28-29-30:
+Para cargar las fraternidades en Supabase:
 
-1. **Fraternidades** — actualizar `orden_ingreso` y `hora_estimada` en
-   `mock-data.js`, o importar por CSV desde el Table Editor. Columnas:
-   `id`, `nombre`, `tipo`, `dia`, `modo_tracking`, `orden_ingreso`,
-   `hora_estimada`, `token_portador`. Después poner `ROL_OFICIAL: true`.
+1. **Fraternidades** — ejecutar [`seed-fraternidades.sql`](seed-fraternidades.sql)
+   en el SQL Editor. Trae las 163 con su entidad, su grupo, su orden y su
+   hora. Es un upsert por `id`, así que se puede volver a correr para
+   corregir un nombre sin borrar los reportes ya cargados.
+
+   Ese archivo se genera desde `mock-data.js`, que es la fuente. Si el rol
+   cambia, se corrige ahí y se vuelve a generar — transcribir dos veces lo
+   mismo es como se meten las diferencias entre el sitio y la base.
 2. **Checkpoints** — un registro por punto, con `lat`/`lng` reales y
    `orden_en_recorrido` según la dirección del desfile.
 3. **Recorrido** — las coordenadas del trazado, en orden.
@@ -184,7 +191,7 @@ ve "adelantado" respecto de la realidad, la velocidad está alta; si las
 bandas se quedan pegadas al punto anterior, está baja.
 
 **No hay respaldo si un checkpoint se cae.** Al no usar portadores GPS,
-las 115 fraternidades dependen íntegramente de los 7 puntos de control. Si
+las 163 fraternidades dependen íntegramente de los 7 puntos de control. Si
 un voluntario no llega, se le agota la batería o se va sin avisar, las
 fraternidades que pasen por ahí quedan sin actualizar hasta el punto
 siguiente — casi 20 minutos más de lo normal. Por eso el plan de dotación
@@ -211,15 +218,14 @@ mapa con el editor. Están en `mock-data.js` y en
 `RECORRIDO_OFICIAL` está en `true`, así que el mapa público ya no muestra
 el aviso de trazado provisional.
 
-**Los checkpoints todavía NO son reales.** Se reparten de forma pareja
-sobre el recorrido verdadero, pero ni su ubicación ni su nombre son los
-definitivos — se llaman "Punto de control 01…10" justamente para que
-nadie los confunda con referencias reales. La página pública los muestra
-como *"Vista en …"*, así que un nombre inventado ahí sería información
-falsa para el público.
+**Los 7 puntos de control ya están ubicados** sobre el recorrido real y
+se llaman "Punto 1" a "Punto 7", que es como quedaron definidos. El
+público no se orienta con ellos: la ficha encabeza con la calle o avenida
+(*"Va por la Avenida Tinkuy"*) y el punto aparece solo en la línea de
+trazabilidad *"Confirmada en Punto 6"*.
 
-Para ubicarlos: **`/chutillos/admin/recorrido/`**, modo "Puntos de
-control". Se escribe el nombre, se hace clic donde va, y la pantalla
-genera el `INSERT` con los nombres ya escapados. Conviene trabajar con
-bastante zoom: la precisión del resultado es la del zoom al que se hizo
-clic.
+Si hiciera falta moverlos: **`/chutillos/admin/recorrido/`**, modo
+"Puntos de control". Se escribe el nombre, se hace clic donde va, y la
+pantalla genera el `INSERT` con los nombres ya escapados. Conviene
+trabajar con bastante zoom: la precisión del resultado es la del zoom al
+que se hizo clic.

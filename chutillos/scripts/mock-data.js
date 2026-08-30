@@ -5,19 +5,19 @@
    Qué es real y qué no, a agosto de 2026:
 
    ✅ RECORRIDO      — trazado levantado sobre el mapa por el cliente.
-   ✅ FRATERNIDADES  — los 115 nombres del Rol de Ingreso oficial de la
-                       AFFAP. Transcritos de los afiches de la Pre-Entrada
-                       (22 y 23 de agosto).
-   ⚠️  ORDEN Y HORAS  — son los de la PRE-ENTRADA, no los de las entradas
-                       del 28-29-30. Sirven como referencia de estructura,
-                       pero hay que reemplazarlos cuando la AFFAP publique
-                       el rol definitivo. Mientras CFG.ROL_OFICIAL sea
-                       false, la página pública no muestra los horarios.
-   ❌ CHECKPOINTS    — ubicación y nombres todavía sin definir.
-   ❌ MODO_TRACKING  — qué fraternidad lleva GPS es decisión del cliente.
+   ✅ CHECKPOINTS    — los 7 puntos, ubicados sobre el mapa por el cliente.
+   ✅ FRATERNIDADES  — Rol de Ingreso oficial de la AFFAP para los tres
+                       días, con su orden y su hora de salida:
+                         28 · Danzas Autóctonas   — 60 ingresos, 6 grupos
+                         29 · Danzas Folklóricas  — 56 ingresos, 5 grupos
+                         30 · Entrada Autóctona   — 47 ingresos, sin grupos
+                       Transcritos de los afiches. Las lecturas dudosas
+                       están anotadas en DUDAS_DE_TRANSCRIPCION.
+   ❌ MODO_TRACKING  — sin portadores GPS: todo se cubre con los puntos
+                       de control (ver GPS_HABILITADO en config.js).
 
-   El día 30 (danzas ancestrales) no tiene rol publicado todavía, así que
-   queda vacío a propósito.
+   Con el rol definitivo cargado, CFG.ROL_OFICIAL pasa a true y la página
+   pública ya publica los horarios de salida.
    ============================================ */
 
 (() => {
@@ -188,151 +188,248 @@
   }
 
   /* ============================================================
-     3. Fraternidades — NOMBRES REALES
+     3. Fraternidades — ROL DE INGRESO OFICIAL AFFAP 2026
      ------------------------------------------------------------
-     Formato: [orden, hora, nombre]
+     Formato: [orden, hora, nombre, entidad, grupo]
 
-     Transcritos a mano de los afiches de la AFFAP. Conviene una lectura
-     de control contra el original antes del evento: son nombres de
-     organizaciones reales y un error tipográfico se ve mal.
+       orden   — posición global en la fila del día. Es la que usa la
+                 cadena del mapa: el desfile es una fila continua y lo que
+                 se ve en la calle es el orden global, no el del grupo.
+       grupo   — número de grupo del afiche (días 28 y 29), o null.
+                 Los afiches numeran del 1 al 10 (o al 12) DENTRO de cada
+                 grupo, así que ese número por sí solo no identifica a
+                 nadie. Se guarda para poder cotejar con el impreso.
+       entidad — institución o comunidad que la presenta. En el día 30 es
+                 imprescindible: hay tres "Sicuriada", tres "Jula Jula" y
+                 tres "Carnaval Blanco", y lo único que las distingue es
+                 de dónde vienen.
+
+     Transcritos a mano de los afiches oficiales de la AFFAP. Las lecturas
+     dudosas están anotadas en DUDAS_DE_TRANSCRIPCION, al final de esta
+     sección.
      ============================================================ */
 
-  /* --- Día 28: Entrada Autóctona (del rol del 22 de agosto) --- */
+  /* --- Día 28: Danzas Autóctonas — rol oficial ---
+     El afiche salta del N° 7 al N° 8 en el Grupo 1 y también salta la
+     franja de las 10:00. Las dos ausencias coinciden, así que se respeta
+     tal cual está impreso en lugar de renumerar. */
   const AUTOCTONAS = [
-    [ 1, '08:10', 'Potosinos Kenny Prieto'],
-    [ 2, '08:20', 'Mineritos Manuel Ascencio Padilla'],
-    [ 3, '08:30', 'Pastorcitos 6 de Junio'],
-    [ 4, '08:40', 'Calcheños Luis Felipe Manzano'],
-    [ 5, '08:50', 'Tarqueada Macedonio Nogales'],
-    [ 6, '09:00', 'Wititis San José'],
-    [ 7, '09:10', 'Potosinos Jadi'],
-    [ 8, '09:20', 'Potosimanta 27 de Mayo'],
-    [ 9, '09:30', 'Pastorcitos Antonio José de Sucre B'],
-    [10, '09:40', 'Tarqueada Simón Bolívar'],
-    [11, '09:50', 'Jaik\'as Tomás Frías'],
-    [12, '10:00', 'Tinku Aniceto Arce'],
+    [ 1, '08:30', 'Comitiva', null, 1],
+    [ 2, '08:40', 'Potolos Manuel Belgrano', null, 1],
+    [ 3, '08:50', 'Tinkuy Los Huaynas Corazón de Jesús', null, 1],
+    [ 4, '09:00', 'Tarqueada Simón Bolívar', null, 1],
+    [ 5, '09:10', 'Potolos Kenny Prieto', null, 1],
+    [ 6, '09:20', 'Mineritos Manuel Ascencio Padilla', null, 1],
+    [ 7, '09:30', 'Calcheños Luis Felipe Manzano', null, 1],
+    [ 8, '09:40', 'Tarqueada Macedonio Nogales', null, 1],
+    [ 9, '09:50', 'Potolos Jadi', null, 1],
+    [10, '10:10', 'Potosimanta 27 de Mayo', null, 1],
 
-    [13, '10:15', 'Tupiceñas Santa Rosa'],
-    [14, '10:30', 'Tarqueada 21 de Enero'],
-    [15, '11:00', 'Potosios Oscar Alfaro'],
-    [16, '10:40', 'Moseñada Monseñor Cleto Loayza'],
-    [17, '10:50', 'Tupiceños Manuel Basconez'],
-    [18, '11:10', 'Jaik\'as Juan Pablo II'],
-    [19, '11:20', 'Tinku Otto Felipe Braun'],
-    [20, '11:35', 'Yureñas Mariscal Sucre'],
-    [21, '11:50', 'Calcheños I.N.A.D.I.'],
-    [22, '12:00', 'Phutukum Enfermería'],
-    [23, '12:10', 'Mineritos Ingeniería Minera'],
+    [11, '10:20', 'Pastorcitos Antonio José de Sucre B', null, 2],
+    [12, '10:30', 'Jalk\'as Tomás Frías', null, 2],
+    [13, '10:40', 'Tinku Aniceto Arce', null, 2],
+    [14, '10:55', 'Tupiceños Santa Rosa', null, 2],
+    [15, '11:05', 'Tarqueada 21 de Enero', null, 2],
+    [16, '11:15', 'Potolos Oscar Alfaro', null, 2],
+    [17, '11:25', 'Pastorcitos 6 de Junio', null, 2],
+    [18, '11:35', 'Tupiceños Manuel Basconez', null, 2],
+    [19, '11:45', 'Jalk\'as Juan Pablo II', null, 2],
+    [20, '11:55', 'Tinku Otto Felipe Braun', null, 2],
 
-    [24, '12:20', 'Jaik\'as Mejillones "B"'],
-    [25, '12:30', 'Potosimanta Esfm-Ea'],
-    [26, '12:45', 'Tinkuy Kussy Ñawy Kennedy'],
-    [27, '12:55', 'Chacarera Alma Libre'],
-    [28, '13:05', 'Carnaval Tarijeño Fund. Cultural Andaluz Tarija'],
-    [29, '13:15', 'Tupiceños Cetec'],
-    [30, '13:25', 'Warak\'aku Cantumarca'],
-    [31, '13:35', 'Mineritos 1ro. de Abril'],
+    [21, '12:05', 'Yureños Mariscal Sucre', null, 3],
+    [22, '12:15', 'Calcheños L.N.A.D.I.', null, 3],
+    [23, '12:25', 'Phutukum Enfermería', null, 3],
+    [24, '12:35', 'Jalk\'as Mejillones "B"', null, 3],
+    [25, '12:45', 'Potosimanta Esfm-Ea', null, 3],
+    [26, '12:55', 'Tinkuy Kussy Ñawy Kennedy', null, 3],
+    [27, '13:05', 'Chacarera Alma Libre', null, 3],
+    [28, '13:15', 'Carnaval Tarijeño Fund. Cultural Andaluz Tarija', null, 3],
+    [29, '13:25', 'Tupiceños Catec', null, 3],
+    [30, '13:35', 'Mineritos Ingeniería Minera', null, 3],
 
-    [32, '13:50', 'Tinkuy Los Huaynas Corazón de Jesús'],
-    [33, '14:05', 'Potosios Manuel Belgrano'],
-    [34, '14:15', 'Chacarera Flor de Quebracho'],
-    [35, '14:30', 'Wititis Inbojlap'],
-    [36, '14:45', 'Tarqueada Agronomía'],
-    [37, '14:55', 'Mi Chura Tarija'],
-    [38, '15:05', 'Mineritos Sinchi Wayra'],
-    [39, '15:20', 'Calcheños Contabilidad y Finanzas'],
-    [40, '15:25', 'Centro Cultural Quebradeños Carnaval Chicheño'],
-    [41, '15:40', 'Wititis Centro Cultural Tolckas Villa Santiago'],
+    [31, '13:45', 'Warak\'aku Cantumarca', null, 4],
+    [32, '13:55', 'Moseñada Monseñor Cleto Loayza', null, 4],
+    [33, '14:05', 'Mineritos 1ro. de Abril', null, 4],
+    [34, '14:20', 'Chacarera Flor de Quebracho', null, 4],
+    [35, '14:30', 'Wititis Inbaljap', null, 4],
+    [36, '14:40', 'Tarqueada Agronomía', null, 4],
+    [37, '14:50', 'Mi Chura Tarija', null, 4],
+    [38, '15:00', 'Calcheños Contabilidad y Finanzas', null, 4],
+    [39, '15:10', 'Centro Cultural Quebradeños Carnaval Chicheño', null, 4],
+    [40, '15:20', 'Wititis Centro Cultural Tolckas Villa Santiago', null, 4],
 
-    [42, '15:50', 'Mineritos Jodis Zona San Cristóbal'],
-    [43, '16:00', 'Calcheños Pichincha'],
-    [44, '16:15', 'Burru Khatis Topografía'],
-    [45, '16:25', 'Tarqueada Ing. Desarrollo Rural'],
-    [46, '16:35', 'Juventud Potosinos Villazón'],
-    [47, '16:45', 'Tinkuy Ñawpa Tolck\'as Huachacalla'],
-    [48, '17:00', 'Gran Tarqueada de Ingenieros y Agrónomos'],
-    [49, '17:10', 'Chacarera Pasión Chaqueña'],
-    [50, '17:25', 'Residentes Tupiceños Carnaval Chicheño'],
-    [51, '17:40', 'Wititis Ingeniería Mecánica'],
-    [52, '17:50', 'Cultural Tinkuy "Los Tolckas" Zona Huachacalla'],
+    [41, '15:30', 'Calcheños Pichincha', null, 5],
+    [42, '15:40', 'Burru Khatis Topografía', null, 5],
+    [43, '15:50', 'Tarqueada Ing. Desarrollo Rural', null, 5],
+    [44, '16:00', 'Mineritos Jodis Zona San Cristóbal', null, 5],
+    [45, '16:10', 'Juventud Potolos Villazón', null, 5],
+    [46, '16:20', 'Tinkuy Ñawpa Tolck\'as Huachacalla', null, 5],
+    [47, '16:30', 'Gran Tarqueada de Ingenieros - Agrónomos', null, 5],
+    [48, '16:40', 'Chacarera Pasión Chaqueña', null, 5],
+    [49, '16:50', 'Residentes Tupiceños Carnaval Chicheño', null, 5],
+    [50, '17:00', 'Wititis Ingeniería Mecánica', null, 5],
 
-    [53, '18:05', 'Flor de Girasoles Filial Potosí - Teodora Flores'],
-    [54, '18:15', 'Wititis Supay Marka'],
-    [55, '18:25', 'Tinkuy Autóctonos Huachacalla'],
-    [56, '18:40', 'Mineritos F.U.L. - U.A.T.F.'],
-    [57, '18:55', 'Zapateada Centro Cult. Artística Nueva Gener. Boliviana F. Potosí'],
-    [58, '19:05', 'Mineritos de la Cooperativa Minera Nueva Calamarca'],
-    [59, '19:15', 'Pandilla de Ravelo Flor de Girasoles Potosí'],
-    [60, '19:25', 'Fraternidad Zapateo Los Kachamosos']
+    [51, '17:10', 'Mineritos Sinchi Wayra', null, 6],
+    [52, '17:20', 'Cultural Tinkuy "Los Tolckas" Zona Huachacalla', null, 6],
+    [53, '18:05', 'Flor de Girasoles Filial Potosí - Teodora Flores', null, 6],
+    [54, '18:15', 'Wititis Supay Marka', null, 6],
+    [55, '18:25', 'Tinkuy Autóctono Huachacalla', null, 6],
+    [56, '18:40', 'Mineritos F.U.L. - U.A.T.F.', null, 6],
+    [57, '18:55', 'Zapateada Centro Cult. Artística Nueva Gener. Boliviana F. Potosí', null, 6],
+    [58, '19:05', 'Mineritos de la Cooperativa Minera Nueva Calamarca', null, 6],
+    [59, '19:15', 'Pandilla de Ravelo Flor de Girasoles Potosí', null, 6],
+    [60, '19:25', 'Fraternidad Zapateo Los Kachamosos', null, 6]
   ];
 
-  /* --- Día 29: Entrada Folklórica (del rol del 23 de agosto) --- */
+  /* --- Día 29: Danzas Folklóricas — rol oficial --- */
   const FOLKLORICAS = [
-    [ 1, '08:10', 'Llamerada San Andrés'],
-    [ 2, '08:20', 'Salay Cristo Maestro'],
-    [ 3, '08:30', 'Negritos de la Torre'],
-    [ 4, '08:45', 'Llamerada Andina Gualberto Villarroel'],
-    [ 5, '08:55', 'Yotaleños Ayda Mendoza de Alurralde'],
-    [ 6, '09:05', 'Negritos Odontología'],
-    [ 7, '09:15', 'Morenada Sedcam'],
-    [ 8, '09:30', 'Diablada Mcal. Andrés de Santa Cruz'],
-    [ 9, '09:45', 'Antawaras Pacífico Sequeiros'],
-    [10, '09:55', 'Suris Carlos Medinaceli'],
-    [11, '10:10', 'Morenada Potosí'],
-    [12, '10:25', 'Caporales Centralistas Socavón'],
+    [ 1, '08:00', 'Comitiva', null, 1],
+    [ 2, '08:10', 'Diablada Cultural y Artística Diablos Rojos Ex Alumnos Pichincha', null, 1],
+    [ 3, '08:20', 'Sambos Caporales', null, 1],
+    [ 4, '08:30', 'Llamarada San Andrés', null, 1],
+    [ 5, '08:40', 'Salay Cristo Maestro', null, 1],
+    [ 6, '08:55', 'Llamarada Andina Gualberto Villarroel', null, 1],
+    [ 7, '09:05', 'Yotaleños Ayda Mendoza de Alurralde', null, 1],
+    [ 8, '09:15', 'Negritos Odontología', null, 1],
+    [ 9, '09:30', 'Morenada Sedcam', null, 1],
+    [10, '09:45', 'Diablada Mcal. Andrés de Santa Cruz', null, 1],
+    [11, '09:55', 'Antawaras Pacífico Sequeiros', null, 1],
+    [12, '10:10', 'Suris Carlos Medinaceli', null, 1],
+    [13, '10:25', 'Morenada Potosí', null, 1],
 
-    [13, '10:35', 'Llamerada Zona Norte'],
-    [14, '10:45', 'Salay José David Berrios'],
-    [15, '10:55', 'Diablada Artística Cultural Santa María'],
-    [16, '11:10', 'Negritos Franciscano'],
-    [17, '11:25', 'Waca Wacas María Gutiérrez'],
-    [18, '11:40', 'Morenada San Cristóbal'],
-    [19, '11:55', 'Llamerada Antofagasta'],
-    [20, '12:05', 'Pujllay 31 de Octubre'],
-    [21, '12:20', 'Suris Bancario'],
-    [22, '12:30', 'Pujllay S.E.P.S.A.'],
-    [23, '12:45', 'Caporales Cervecería Nacional Potosí'],
+    [14, '10:40', 'Caporales Centralistas Socavón', null, 2],
+    [15, '10:50', 'Llamarada Zona Norte', null, 2],
+    [16, '11:00', 'Salay José David Berrios', null, 2],
+    [17, '11:10', 'Diablada Artística Cultural Santa María', null, 2],
+    [18, '11:20', 'Negritos Franciscanos', null, 2],
+    [19, '11:35', 'Waca Wacas María Gutiérrez', null, 2],
+    [20, '11:50', 'Morenada San Cristóbal', null, 2],
+    [21, '12:05', 'Llamarada Antofagasta', null, 2],
+    [22, '12:20', 'Pujllay 31 de Octubre', null, 2],
+    [23, '12:30', 'Suris Bancario', null, 2],
+    [24, '12:45', 'Pujllay S.E.P.S.A.', null, 2],
+    [25, '13:00', 'Caporales Cervecería Nacional Potosí', null, 2],
 
-    [24, '13:00', 'Llamerada María Auxiliadora'],
-    [25, '13:10', 'Cullaguada San Martín'],
-    [26, '13:20', 'Zambos Medicina'],
-    [27, '13:30', 'Diablada Bamin'],
-    [28, '13:45', 'Morenada Central Potosí'],
-    [29, '14:00', 'Caporales Ingeniería Civil'],
-    [30, '14:15', 'Saya Afro Boliviana Artes Uatf'],
-    [31, '14:25', 'Tobas Juan Manuel Calero'],
-    [32, '14:40', 'Caporales Domingo Savio'],
-    [33, '14:55', 'Morenada Auténtica Central Potosí'],
-    [34, '15:10', 'Diablada Santa Lucía'],
-    [35, '15:25', 'Salay Bolivia'],
-    [36, '15:35', 'Caporales Fieras del Gran Potosí'],
+    [26, '13:10', 'Llamarada María Auxiliadora', null, 3],
+    [27, '13:20', 'Cullaguada San Martín', null, 3],
+    [28, '13:30', 'Zambos Medicina', null, 3],
+    [29, '13:45', 'Diablada Bamin', null, 3],
+    [30, '14:00', 'Morenada Central Potosí', null, 3],
+    [31, '14:15', 'Caporales Ingeniería Civil', null, 3],
+    [32, '14:25', 'Saya Afro Boliviana Artes UATF', null, 3],
+    [33, '14:25', 'Tobas Juan Manuel Calero', null, 3],
+    [34, '14:50', 'Caporales Domingo Savio', null, 3],
+    [35, '15:05', 'Morenada Auténtica Central Potosí', null, 3],
+    [36, '15:20', 'Diablada Santa Lucía', null, 3],
+    [37, '15:35', 'Salay Bolivia', null, 3],
 
-    [37, '15:45', 'Cullaguada Maypas Trabajo Social'],
-    [38, '15:55', 'Morenada 100% Intocables La Nueva Elegancia en Potosí'],
-    [39, '16:10', 'Tobas Ingeniería Informática'],
-    [40, '16:20', 'Pujllay Derecho'],
-    [41, '16:35', 'Caporales San Simón'],
-    [42, '16:45', 'Diablada LED Tradicional'],
-    [43, '16:55', 'Morenada Fanáticos'],
-    [44, '17:10', 'Saya Afro Boliviana Mocafri'],
-    [45, '17:20', '100% Salay Potosí'],
-    [46, '17:30', 'Diablada Cultural y Artística Diablos Rojos Ex Alumnos Pichincha'],
-    [47, '17:40', 'Sallay Tukuypaj'],
-    [48, '17:50', 'Pujllay Economía'],
+    [38, '15:45', 'Caporales Fieras del Gran Potosí', null, 4],
+    [39, '15:55', 'Cullaguada Maypes Trabajo Social', null, 4],
+    [40, '16:05', 'Morenada 100% Intocables La Nueva Elegancia en Potosí', null, 4],
+    [41, '16:20', 'Tobas Ingeniería Informática', null, 4],
+    [42, '16:30', 'Pujllay Derecho', null, 4],
+    [43, '16:40', 'Caporales San Simón', null, 4],
+    [44, '16:50', '100% Salay Potosí', null, 4],
+    [45, '17:00', 'Morenada Fanáticos', null, 4],
+    [46, '17:15', 'Saya Afro Boliviana Mocafri', null, 4],
+    [47, '17:25', 'Diablada LIED Tradicional', null, 4],
+    [48, '17:35', 'Salay Tukuypaj', null, 4],
+    [49, '17:45', 'Pujllay Economía', null, 4],
 
-    [49, '18:05', 'Salay Cochabamba'],
-    [50, '18:15', 'Llamerada Agro Industrial'],
-    [51, '18:25', 'Salay Expresión Boliviana'],
-    [52, '18:35', 'Saya Afro Boliviana Ingeniería Ambiental'],
-    [53, '18:45', 'Negritos Ingeniería de Sistemas'],
-    [54, '18:55', 'Zambos Caporales'],
-    [55, '19:05', 'Zapatero Pandilla Nueva Generación']
+    [50, '17:55', 'Salay Cochabamba', null, 5],
+    [51, '18:05', 'Negritos de la Torre', null, 5],
+    [52, '18:15', 'Llamarada Agroindustrial', null, 5],
+    [53, '18:25', 'Salay Expresión Boliviana', null, 5],
+    [54, '18:35', 'Saya Afro Boliviana Ingeniería Ambiental', null, 5],
+    [55, '18:45', 'Negritos Ingeniería de Sistemas', null, 5],
+    [56, '19:00', 'Zapateo Pandilla Nueva Generación', null, 5]
+  ];
+
+  /* --- Día 30: Entrada Autóctona — rol oficial del domingo 30 ---
+     Un solo bloque corrido de 47 ingresos, cada 10 minutos entre las
+     10:00 y las 17:40. Sin grupos y sin comitiva: el afiche no los tiene.
+
+     Acá el nombre solo no alcanza. "Sicuriada" aparece tres veces, "Jula
+     Jula" tres veces y "Carnaval Blanco" tres veces: son fraternidades
+     distintas de municipios distintos. Por eso la entidad va en su propio
+     campo y se muestra debajo del nombre en la lista, en el buscador y en
+     la pantalla del voluntario de punto de control — que es quien tiene
+     que decidir en dos segundos cuál acaba de pasar. */
+  const AUTOCTONAS_30 = [
+    [ 1, '10:00', 'La Cacharpaya', 'Comunidad de San Antonio · Municipio de Yocalla', null],
+    [ 2, '10:10', 'Pascananitan', 'Asamblea Legislativa Departamental de Potosí', null],
+    [ 3, '10:20', 'Carnaval de Antaño', 'Secretaría Departamental de Turismo y Cultura', null],
+    [ 4, '10:30', 'Cajanis', 'Municipio de Tahua', null],
+    [ 5, '10:40', 'Sicuriada', 'Gobierno Autónomo Departamental de Potosí', null],
+    [ 6, '10:50', 'Anatas', 'Municipio de Tahua', null],
+    [ 7, '11:00', 'Erkenchada', 'Comunidad de Lampaya · Municipio de Villazón', null],
+    [ 8, '11:10', 'Carnaval Carmeño', 'Comunidad de San Miguel · Municipio de Porco', null],
+    [ 9, '11:20', 'Carnaval Blanco', 'Municipio de Tomave', null],
+    [10, '11:30', 'Carnaval Chumpi', 'Municipio de Tomave', null],
+    [11, '11:40', 'Carnaval Blanco', 'Carlos Machicado · Municipio de Tomave', null],
+    [12, '11:50', 'Pali Pali', 'Comunidad Originaria de Cocani · Municipio de Colcha K', null],
+    [13, '12:00', 'Karapayas', 'Comunidad de Tarapaya · Municipio de Potosí', null],
+    [14, '12:10', 'Carnaval Cotagaiteño', 'Municipio de Cotagaita', null],
+    [15, '12:20', 'Turuchipeños', 'Comunidad de Turuchipa · Municipio de Ckochas', null],
+    [16, '12:30', 'Qhonqhota', 'SEDES', null],
+    [17, '12:40', 'Tupiceños', 'Centro Cultural Quebradeños', null],
+    [18, '12:50', 'Carnaval Aripalqueño', 'SEDEGES', null],
+    [19, '13:00', 'Salaque', 'Municipio de Colquechaca', null],
+    [20, '13:10', 'Sicuriada', 'Municipio de Atocha', null],
+    [21, '13:20', 'Sampoñaris', 'Municipio de Vitichi', null],
+    [22, '13:30', 'Fandango', 'SEDCOHI · Municipio de Ckochas', null],
+    [23, '13:40', 'Carnaval Yureño', 'Gobierno Autónomo Indígena Originario Campesino del Jatun Ayllu Yura', null],
+    [24, '13:50', 'Conjunto Carnaval Blanco', 'Comunidad de Villa Esperanza · Municipio de Uyuni', null],
+    [25, '14:00', 'Anata Carnaval Lipeño', 'Municipio de Llica', null],
+    [26, '14:10', 'Burro Qhati', 'Gobierno Autónomo Departamental de Potosí', null],
+    [27, '14:20', 'Chililin', 'Municipio de Caiza "D"', null],
+    [28, '14:30', 'El Matrimonio', 'Municipio de Llallagua', null],
+    [29, '14:40', 'Sicuriada', 'Municipio de Llallagua', null],
+    [30, '14:50', 'Jula Jula', 'Municipio de Pocoata', null],
+    [31, '15:00', 'Los Viejos de Rodero', 'Municipio de Chaquí', null],
+    [32, '15:10', 'Niño de la Virgen de Guadalupe', 'Col. Nal. Chaquí · Municipio de Chaquí', null],
+    [33, '15:20', 'Fiesta de Aylantu', 'Comunidad de Yascapi · Municipio de Puna', null],
+    [34, '15:30', 'Jula Jula', 'Comunidad de Cantumarca · Municipio de Potosí', null],
+    [35, '15:40', 'Pandilla de Condes', 'Municipio de Tacobamba', null],
+    [36, '15:50', 'Pascua / Caja Rueda', 'U.E. Alberto Maisano · Comunidad de Ñuqui · Municipio de Puna', null],
+    [37, '16:00', 'Pinkillada', 'Municipio de Tinguipaya', null],
+    [38, '16:10', 'Carnavalito', 'Municipio de Yocalla', null],
+    [39, '16:20', 'Jaylliris', 'Comunidad de Suquicha · Municipio de Puna', null],
+    [40, '16:30', 'Jula Jula', 'Comunidad de Puyuj Pata · Ayllu Kollana Inaire · Municipio de Tinguipaya', null],
+    [41, '16:40', 'Carnaval Tingueño', 'Municipio de Tinguipaya', null],
+    [42, '16:50', 'Carnaval Coromeño', 'Comunidad de Coroma · Municipio de Uyuni', null],
+    [43, '17:00', 'Suri Sikus', 'Comunidad de Wila Qullu · Municipio de Potosí', null],
+    [44, '17:10', 'Wititis', 'Centro Cultural Supay Marka', null],
+    [45, '17:20', 'Saltarín', 'Ballet Cima de Plata', null],
+    [46, '17:30', 'Tinkuy', 'Municipio de San Pedro de Macha', null],
+    [47, '17:40', 'Tinkuy', 'Fraternidad Cultural Tinkuy Tolckas Huachacalla', null]
+  ];
+
+  /* ------------------------------------------------------------
+     Lecturas dudosas del afiche
+
+     Son nombres de organizaciones reales, así que en vez de elegir en
+     silencio quedan anotados acá para cotejar contra el impreso. No los
+     usa el código: existen para que la corrección sea un cambio de una
+     línea y no una nueva transcripción.
+     ------------------------------------------------------------ */
+  const DUDAS_DE_TRANSCRIPCION = [
+    'Día 28 · G1: el afiche salta el N° 7 y la franja de las 10:00.',
+    'Día 28 · G5 N° 10 (Wititis Ingeniería Mecánica): la hora no se lee en el afiche. Cargada como 17:00 por la cadencia de 10 min del grupo.',
+    'Día 28 · G4 N° 8: el afiche dice "Culcheños"; cargado como "Calcheños", que es como figura en el resto del rol.',
+    'Día 28 · G6 N° 6: el afiche dice "F.U.L. LLL.A.T.F"; cargado como "F.U.L. - U.A.T.F.".',
+    'Día 28 · G6 N° 10: "Kachamosos" o "Kachanosos" — el afiche no distingue la letra.',
+    'Día 29: el afiche escribe "Llamarada"; la danza suele escribirse "Llamerada". Se respetó el afiche.',
+    'Día 29 · G1 N° 6: "Yotalerios" en el afiche; cargado como "Yotaleños".',
+    'Día 29 · G1 N° 10: "Antaveras" en el afiche; cargado como "Antawaras".',
+    'Día 29 · G3: los N° 7 y 8 figuran los dos a las 14:25 en el afiche.',
+    'Día 29 · G4 N° 2: "Maypes" o "Maypas".'
   ];
 
   /* ------------------------------------------------------------
      Modo de seguimiento
 
-     Para Ch'utillos 2026 se decidió no usar portadores GPS: las 115
+     Para Ch'utillos 2026 se decidió no usar portadores GPS: las 163
      fraternidades se cubren íntegramente con los puntos de control.
 
      Si el plan vuelve a cambiar, alcanza con poner GPS_HABILITADO en true
@@ -341,22 +438,25 @@
      ------------------------------------------------------------ */
   const CON_GPS_DIA_28 = [];
   const CON_GPS_DIA_29 = [];
+  const CON_GPS_DIA_30 = [];
 
   const fraternidades = [];
   let n = 0;
 
-  construir(AUTOCTONAS,  28, 'autoctona',  CON_GPS_DIA_28);
-  construir(FOLKLORICAS, 29, 'folklorica', CON_GPS_DIA_29);
-  /* Día 30 (danzas ancestrales): sin rol publicado todavía. */
+  construir(AUTOCTONAS,    28, 'autoctona',  CON_GPS_DIA_28);
+  construir(FOLKLORICAS,   29, 'folklorica', CON_GPS_DIA_29);
+  construir(AUTOCTONAS_30, 30, 'autoctona',  CON_GPS_DIA_30);
 
   function construir(lista, dia, tipo, conGps) {
     const gpsActivo = window.CHUTILLOS_CONFIG.GPS_HABILITADO;
-    lista.forEach(([orden, hora, nombre]) => {
+    lista.forEach(([orden, hora, nombre, entidad, grupo]) => {
       n++;
       const gps = gpsActivo && conGps.includes(orden);
       fraternidades.push({
         id: `fr-${String(n).padStart(3, '0')}`,
         nombre,
+        entidad: entidad || null,
+        grupo: grupo || null,
         tipo,
         dia,
         modo_tracking: gps ? 'gps' : 'checkpoint',

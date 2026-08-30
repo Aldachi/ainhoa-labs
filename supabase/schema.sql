@@ -29,6 +29,13 @@
 create table if not exists fraternidades (
   id              text primary key,
   nombre          text not null,
+  -- Institucion o comunidad que la presenta. En el dia 30 hay tres
+  -- "Sicuriada", tres "Jula Jula" y tres "Carnaval Blanco": el nombre
+  -- solo no identifica a nadie, la entidad si.
+  entidad         text,
+  -- Numero de grupo del afiche (dias 28 y 29). Solo para poder cotejar
+  -- con el impreso: el orden que vale es orden_ingreso, que es global.
+  grupo           smallint,
   tipo            text not null check (tipo in ('autoctona', 'folklorica')),
   dia             smallint not null check (dia in (28, 29, 30)),
   modo_tracking   text not null default 'checkpoint'
@@ -301,7 +308,8 @@ create policy lectura_publica_calles on calles
 
 revoke all on fraternidades from anon;
 grant select (
-  id, nombre, tipo, dia, modo_tracking, orden_ingreso, hora_estimada
+  id, nombre, entidad, grupo, tipo, dia, modo_tracking, orden_ingreso,
+  hora_estimada
 ) on fraternidades to anon;
 
 revoke all on checkpoints from anon;

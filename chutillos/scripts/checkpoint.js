@@ -126,7 +126,7 @@
     const q = U.normalizar(filtroTexto).trim();
     return fraternidades
       .filter(f => f.dia === filtroDia)
-      .filter(f => !q || U.normalizar(f.nombre).includes(q))
+      .filter(f => !q || U.buscable(f).includes(q))
       .sort((a, b) => {
         /* Las pendientes primero; dentro de cada grupo, por orden de ingreso */
         const ra = reportadas.has(a.id) ? 1 : 0;
@@ -158,10 +158,10 @@
       b.dataset.reportada = String(marcada);
       b.dataset.id = f.id;
 
-      /* El horario solo se muestra si el rol cargado es el definitivo. Con
-         el rol de la Pre-Entrada, una hora de otro día en pantalla
-         confunde al voluntario justo cuando tiene que decidir rápido. El
-         orden de ingreso, en cambio, sí es la referencia que sirve. */
+      /* El horario solo se muestra si el rol cargado es el definitivo. Una
+         hora de otro día en pantalla confunde al voluntario justo cuando
+         tiene que decidir rápido. El orden de ingreso, en cambio, sirve
+         siempre. */
       const referencia = CFG.ROL_OFICIAL
         ? `Ingreso ${f.orden_ingreso} · ${f.hora_estimada}`
         : `Ingreso ${f.orden_ingreso}`;
@@ -173,6 +173,7 @@
       b.innerHTML =
         `<span>` +
           `<span class="chx-nombre">${U.esc(f.nombre)}</span>` +
+          (f.entidad ? `<span class="chx-entidad">${U.esc(f.entidad)}</span>` : '') +
           `<span class="chx-sub">${U.esc(cuando)}</span>` +
         `</span>` +
         `<svg class="chx-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true">` +
