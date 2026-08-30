@@ -480,18 +480,31 @@
 
   const CFG = window.CHUTILLOS_CONFIG;
 
-  /* Va contra el reloj real del dispositivo, no contra un desfase fijo
-     desde que cargó la página. Es lo que hace que a las 11 de la mañana se
-     vea lo que pasa a las 11, y que la vista siga siendo correcta sola a
-     lo largo del día sin tocar nada. */
-  const HORA_ARRANQUE = 8 * 60;        // origen comun de los tres dias
+  /* Va contra el reloj real, no contra un desfase fijo desde que cargó la
+     página: a las 11 de la mañana se ve lo que pasa a las 11, y la vista
+     sigue siendo correcta sola durante todo el día sin tocar nada.
 
-  /* Día del evento que se está corriendo, según la fecha del dispositivo.
-     Antes del 28 se asume el 28; después del 30, el 30. */
+     Y contra la hora de POTOSÍ, no la del dispositivo. A esta página la
+     abren desde afuera —el rol está lleno de residentes y de gente que
+     mira de otra ciudad— y con el reloj local un pariente en España vería
+     el desfile seis horas adelantado, con todas llegando cuando en Potosí
+     recién van por la mitad. Bolivia es UTC-4 todo el año, sin horario de
+     verano. */
+  const HORA_ARRANQUE = 8 * 60;        // origen comun de los tres dias
+  const UTC_BOLIVIA = -4;
+
+  /* Medianoche en Potosí del día que se le pida, como instante absoluto. */
+  function medianocheEnPotosi(dia) {
+    return Date.UTC(2026, 7, dia, -UTC_BOLIVIA, 0, 0);
+  }
+
+  /* Día del evento que se está corriendo. Antes del 28 se asume el 28;
+     del 30 en adelante, el 30 — la madrugada del 31 sigue siendo la
+     jornada del domingo, que termina pasada la medianoche. */
   const DIA_HOY = (() => {
-    const h = new Date();
-    if (h.getFullYear() === 2026 && h.getMonth() === 7) {
-      const d = h.getDate();
+    const b = new Date(Date.now() + UTC_BOLIVIA * 3600000);
+    if (b.getUTCFullYear() === 2026 && b.getUTCMonth() === 7) {
+      const d = b.getUTCDate();
       if (d < 28) return 28;
       if (d <= 30) return d;
     }
@@ -507,9 +520,16 @@
      mapa, este es el número que hay que mover. */
   const ATRASO_ARRANQUE_MIN = 40;
 
+  /* Minutos transcurridos desde las 08:00 de HOY, la jornada en curso.
+
+     Se cuenta desde el arranque del día y no desde la medianoche a
+     proposito: la última sale 18:48 y llega pasadas las 23:00, así que a
+     la 01:00 el contador tiene que seguir creciendo en vez de volver a
+     cero. Si no, a la madrugada el desfile entero se vería como que
+     todavía no salió. */
   function minutoDeEvento() {
-    const h = new Date();
-    return h.getHours() * 60 + h.getMinutes() + h.getSeconds() / 60 - HORA_ARRANQUE;
+    const inicio = medianocheEnPotosi(DIA_HOY) + HORA_ARRANQUE * 60000;
+    return (Date.now() - inicio) / 60000;
   }
 
   /* Fecha real que corresponde a un minuto del rol de un día dado.
@@ -518,10 +538,7 @@
      todo sobre la fecha de hoy, el paso de una fraternidad del viernes por
      el último punto se leería como "dentro de tres horas". */
   function fechaDeMinutoEnDia(dia, m) {
-    const f = new Date();
-    f.setMonth(7, dia);
-    f.setHours(0, 0, 0, 0);
-    return new Date(f.getTime() + (HORA_ARRANQUE + m) * 60000);
+    return new Date(medianocheEnPotosi(dia) + (HORA_ARRANQUE + m) * 60000);
   }
 
   function horaAMinutos(hhmm) {
