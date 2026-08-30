@@ -22,8 +22,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 
-  <link rel="stylesheet" href="../styles/main.css?v=22">
-  <link rel="stylesheet" href="styles/chutillos.css?v=22">
+  <link rel="stylesheet" href="../styles/main.css?v=23">
+  <link rel="stylesheet" href="styles/chutillos.css?v=23">
 </head>
 <body class="chx">
 
@@ -44,6 +44,14 @@
       </div>
     </div>
   </header>
+
+  <!-- Se muestra solo si la pagina esta corriendo con datos de ejemplo.
+       Ver aviso-simulacion en publico.js. -->
+  <div class="chx-simulacion" id="aviso-simulacion" role="alert" hidden>
+    <strong>Esto es una demostración.</strong> Las posiciones que ves son
+    simuladas, no el recorrido real de hoy. El rol de ingreso sí es el
+    oficial de la AFFAP.
+  </div>
 
   <div class="chx-filtros">
     <div class="chx-dias" id="dias" role="group" aria-label="Filtrar por día"></div>
@@ -98,11 +106,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <script src="scripts/config.js?v=22"></script>
-  <script src="scripts/mock-data.js?v=22"></script>
-  <script src="scripts/data.js?v=22"></script>
-  <script src="scripts/util.js?v=22"></script>
-  <script src="scripts/recorrido.js?v=22"></script>
-  <script src="scripts/publico.js?v=22"></script>
+  <script src="scripts/config.js?v=23"></script>
+  <script src="scripts/mock-data.js?v=23"></script>
+  <script src="scripts/data.js?v=23"></script>
+  <script src="scripts/util.js?v=23"></script>
+  <script src="scripts/recorrido.js?v=23"></script>
+  <script src="scripts/publico.js?v=23"></script>
 </body>
 </html>

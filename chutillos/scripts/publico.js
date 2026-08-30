@@ -168,6 +168,13 @@
      Carga inicial
      ============================================================ */
   async function iniciar() {
+    /* Sin base de datos conectada las posiciones son inventadas, pero la
+       pagina se ve igual que con datos reales: mismo mapa, mismas bandas,
+       misma insignia. Durante el evento eso se lee como la posicion real
+       de una fraternidad, asi que se avisa antes que nada. */
+    const $simulacion = document.getElementById('aviso-simulacion');
+    if ($simulacion) $simulacion.hidden = !CFG.USAR_MOCK;
+
     pintarDias();
 
     try {
@@ -238,7 +245,10 @@
       const filas = await Datos.getUltimasPosiciones();
       posiciones = new Map(filas.map(p => [p.fraternidad_id, p]));
       fallosSeguidos = 0;
-      pintarEstado('vivo', 'En vivo');
+      /* Con datos de ejemplo la insignia no puede decir 'En vivo': la
+         pagina se ve exactamente igual que con datos reales, y durante el
+         evento alguien la leeria como la posicion de su fraternidad. */
+      pintarEstado('vivo', CFG.USAR_MOCK ? 'Demostración' : 'En vivo');
       pintarLista();
       pintarMarcadores();
     } catch (err) {
