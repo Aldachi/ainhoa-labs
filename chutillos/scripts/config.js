@@ -114,13 +114,20 @@
     MAPA_CENTRO: [-19.5892, -65.7580],
     MAPA_ZOOM: 14,
 
-    /* El trazado cargado en mock-data.js es el real, levantado sobre el
-       mapa por el cliente, así que el aviso de "trazado referencial" ya no
-       corresponde.
-
-       Ojo: esto habla solo del recorrido. Los checkpoints siguen sin
-       ubicar. */
+    /* El trazado y los 7 puntos de control son los reales, levantados
+       sobre el mapa por el cliente, así que el aviso de "trazado
+       referencial" ya no corresponde. */
     RECORRIDO_OFICIAL: true,
+
+    /* ---- Evento cerrado ---------------------------------------------------
+       Ch'utillos 2026 terminó el 30 de agosto. El tracker queda como
+       registro de lo que pasó, no como algo que esté ocurriendo: la
+       insignia dice "Finalizado" en vez de "En vivo".
+
+       Para la edición siguiente: poner en false, cargar el rol nuevo y
+       volver a enlazar el tracker desde la navegación del sitio.
+    --------------------------------------------------------------------- */
+    EVENTO_TERMINADO: true,
 
     /* Cargado el Rol de Ingreso oficial de la AFFAP para los tres días
        (28 autóctonas, 29 folklóricas, 30 entrada autóctona), con su orden

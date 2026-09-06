@@ -92,19 +92,24 @@
      Reparto a lo largo del recorrido (3518 m):
 
        Punto 1     43 m del inicio   — confirma la salida
-       Punto 2    503 m                 tramo previo: 460 m
-       Punto 3    949 m                 tramo previo: 446 m
-       Punto 4   1741 m                 tramo previo: 792 m  <-- el mas largo
-       Punto 5   2306 m                 tramo previo: 565 m
-       Punto 6   2788 m                 tramo previo: 482 m
-       Punto 7   3448 m                 tramo previo: 661 m
-                                        hasta el final:  70 m
+       Punto 2    503 m       tramo previo: 460 m   (~35 min)
+       Punto 3    949 m       tramo previo: 446 m   (~33 min)
+       Punto 4   1741 m       tramo previo: 792 m   (~59 min)  <-- el mas largo
+       Punto 5   2306 m       tramo previo: 565 m   (~42 min)
+       Punto 6   2788 m       tramo previo: 482 m   (~36 min)
+       Punto 7   3448 m       tramo previo: 661 m   (~50 min)
+                              hasta el final:  70 m  (~5 min)
 
-     El tramo Punto 3 -> Punto 4 son 792 m: a paso de desfile, unos 27
-     minutos sin actualizar, por encima del umbral de dato viejo (25 min).
-     Las fraternidades que estén en ese tramo se van a ver en gris aunque
-     todo funcione. Se puede emparejar corriendo el Punto 3 unos 230 m
-     hacia adelante, a lat -19.586681 / lng -65.759857.
+     Los tiempos son a 0.80 km/h. El tramo Punto 3 -> Punto 4 es casi una
+     hora sin noticias, el doble que el más corto — pero eso NO hace que
+     la fraternidad se vea como dato viejo: la frescura se mide contra el
+     tiempo esperado de SU tramo (util.js: razon = transcurrido /
+     esperadoMin), no contra un umbral fijo. Una hora en el tramo largo es
+     normal; media hora en el corto ya no lo es.
+
+     Aun así es el tramo más expuesto: si ese voluntario falla, son 59
+     minutos hasta la próxima confirmación. Se puede acortar corriendo el
+     Punto 3 unos 230 m hacia adelante, a lat -19.586681 / lng -65.759857.
 
      Los nombres "Punto 1" a "Punto 7" son los definitivos, por decisión
      del cliente. Funciona porque el público ya no los necesita para

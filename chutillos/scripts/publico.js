@@ -238,7 +238,9 @@
       const filas = await Datos.getUltimasPosiciones();
       posiciones = new Map(filas.map(p => [p.fraternidad_id, p]));
       fallosSeguidos = 0;
-      pintarEstado('vivo', 'En vivo');
+      /* Terminado el evento la insignia no puede seguir diciendo "En vivo":
+         no hay nada en vivo que mirar, y el mapa muestra un registro. */
+      pintarEstado('vivo', CFG.EVENTO_TERMINADO ? 'Finalizado' : 'En vivo');
       pintarLista();
       pintarMarcadores();
     } catch (err) {
