@@ -8,16 +8,41 @@ Potosí). Construido por Ainhoa Labs.
 
 ---
 
+## Dónde está el código
+
+**Ya no está en el árbol de trabajo.** Terminado el evento, `chutillos/`
+y `supabase/` se sacaron del repositorio. Nada se perdió: el historial de
+git los conserva enteros, y este documento es la guía para volver a
+sacarlos de ahí.
+
+La etiqueta `chutillos-2026` apunta al último commit que lo tiene todo
+(`0e252a4`). Para recuperarlo:
+
+```bash
+git checkout chutillos-2026 -- chutillos supabase
+```
+
+Eso devuelve los 24 archivos al árbol de trabajo sin mover la rama. Para
+solo mirarlo sin tocar nada: `git show chutillos-2026:chutillos/scripts/config.js`.
+
+Todas las rutas que este documento menciona son relativas a ese árbol.
+
+---
+
 ## Estado
 
-**Terminado y retirado del sitio.** El evento pasó, el tracker salió de la
-navegación —del menú de escritorio y del móvil— y quedó en `/chutillos/`
-como registro: sin enlaces que lleguen a él, con `noindex` y con la
-insignia en "Finalizado" en vez de "En vivo".
+**Terminado y cerrado.** El evento pasó. Primero el tracker salió de la
+navegación del sitio y quedó como registro en `/chutillos/`, con `noindex`
+y la insignia en "Finalizado"; después se retiró el módulo entero del
+repositorio. Hoy `ainhoalabs.com` no tiene rastro de Ch'utillos: la ruta
+`/chutillos/` ya no existe.
+
+Lo que sí quedó en el repositorio es `worker/index.js`, que sirve el sitio
+entero y no era solo de este proyecto.
 
 Un dato que hay que decir sin adornos: **según lo que hay en el
 repositorio, el sistema nunca llegó a operar con datos reales.**
-`USAR_MOCK` sigue en `true`, `SUPABASE_URL` y `SUPABASE_ANON_KEY` están
+`USAR_MOCK` quedó en `true`, `SUPABASE_URL` y `SUPABASE_ANON_KEY` están
 vacías y el Worker nunca se desplegó desde acá. Todo lo que se vio durante
 los tres días fue la simulación corriendo contra el reloj real. Si en
 algún momento se conectó Supabase por fuera del repositorio, esto hay que
@@ -234,6 +259,8 @@ que ninguna.
 
 ## Estructura
 
+Así quedó el módulo (recuperable con `git checkout chutillos-2026 -- …`):
+
 ```
 chutillos/
   index.html            página pública
@@ -250,7 +277,7 @@ chutillos/
     queue.js            cola offline con reintentos
     publico.js  checkpoint.js  portador.js  admin.js
   styles/chutillos.css
-worker/index.js         estáticos + /api/admin con PIN
+worker/index.js         estáticos + /api/admin con PIN  ← SIGUE EN EL REPO
 supabase/
   README.md             puesta en producción, paso a paso
   schema.sql            6 tablas, RLS, RPC SECURITY DEFINER
@@ -273,18 +300,19 @@ costar el seguimiento del día.
 
 ## Volver a levantarlo el año que viene
 
-1. `EVENTO_TERMINADO: false` y `ROL_OFICIAL: false` en `config.js`.
-2. Cargar el rol nuevo en `mock-data.js` y regenerar
+1. Recuperar el código: `git checkout chutillos-2026 -- chutillos supabase`.
+2. `EVENTO_TERMINADO: false` y `ROL_OFICIAL: false` en `config.js`.
+3. Cargar el rol nuevo en `mock-data.js` y regenerar
    `seed-fraternidades.sql`.
-3. Confirmar recorrido y puntos de control con la AFFAP — si cambian, se
+4. Confirmar recorrido y puntos de control con la AFFAP — si cambian, se
    vuelven a marcar en `/chutillos/admin/recorrido/`.
-4. Crear el proyecto de Supabase y seguir `supabase/README.md`:
+5. Crear el proyecto de Supabase y seguir `supabase/README.md`:
    esquema, seeds, tokens, secretos del Worker.
-5. `USAR_MOCK: false` con las credenciales cargadas.
-6. `ROL_OFICIAL: true` recién con el rol definitivo.
-7. Volver a enlazar `chutillos/` desde la navegación en `index.html` y
+6. `USAR_MOCK: false` con las credenciales cargadas.
+7. `ROL_OFICIAL: true` recién con el rol definitivo.
+8. Volver a enlazar `chutillos/` desde la navegación en `index.html` y
    quitarle el `noindex`.
-8. Repartir los enlaces de voluntario desde el panel admin, pestaña
+9. Repartir los enlaces de voluntario desde el panel admin, pestaña
    Enlaces. **Uno por persona, nunca en grupos abiertos** — quien tiene el
    enlace puede reportar en nombre de ese punto.
 
@@ -304,3 +332,8 @@ Las comprobaciones previas al evento están en `supabase/README.md`, § 6.
 - Verificar en el mapa el tramo de 62 m de la Avenida Universitaria.
 - Considerar correr el Punto 3 unos 230 m adelante, para partir el tramo
   de 59 minutos.
+- `worker/index.js` se dejó intacto por decisión del cliente: sigue
+  sirviendo el sitio y manteniendo las cabeceras de caché, pero conserva
+  `/api/admin` y el bloqueo de `/supabase/` apuntando a cosas que ya no
+  están en el árbol. Es código muerto, inofensivo, y hace falta el día
+  que se recupere el módulo.
